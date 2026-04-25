@@ -9,11 +9,142 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  meals     Meal[]
+  role      Role
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  mealPlans MealPlan[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Food {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  calories         Float?
+  protein          Float?
+  fat              Float?
+  carbohydrate     Float?
+  fiber            Float?
+  sugar            Float?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  category         Category?         @relation(fields: [categoryId], references: [id])
+  categoryId       Int?
+  foodServingUnits FoodServingUnit[]
+  mealFoods        MealFood[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  foods     Food[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServingUnit {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  foodServingUnits FoodServingUnit[]
+  mealFoods        MealFood[]
+}
+
+// join table
+model FoodServingUnit {
+  id            Int         @id @default(autoincrement())
+  food          Food        @relation(fields: [foodId], references: [id])
+  foodId        Int
+  servingUnit   ServingUnit @relation(fields: [servingUnitId], references: [id])
+  servingUnitId Int
+  grams         Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Meal {
+  id        Int      @id @default(autoincrement())
+  dateTime  DateTime
+  type      MealType // 👈 added
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mealFoods MealFood[]
+  planItems MealPlanItem[] // 👈 relation to planner
+
+  @@index([userId])
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+model MealPlan {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items MealPlanItem[]
+
+  @@index([userId])
+}
+
+model MealPlanItem {
+  id Int @id @default(autoincrement())
+
+  planId Int
+  plan   MealPlan @relation(fields: [planId], references: [id])
+
+  mealId Int
+  meal   Meal @relation(fields: [mealId], references: [id])
+
+  day  Day // "Monday", "Tuesday" etc.
+  type MealType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([planId, day, type])
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model MealFood {
+  id            Int         @id @default(autoincrement())
+  food          Food        @relation(fields: [foodId], references: [id])
+  foodId        Int
+  meal          Meal        @relation(fields: [mealId], references: [id])
+  mealId        Int
+  servingUnit   ServingUnit @relation(fields: [servingUnitId], references: [id])
+  servingUnitId Int
+  amount        Float
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
