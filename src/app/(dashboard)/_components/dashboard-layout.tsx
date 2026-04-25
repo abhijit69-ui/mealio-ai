@@ -58,7 +58,7 @@ const ROUTE_GROUPS: RouteGroupType[] = [
     ],
   },
   {
-    group: "Foods",
+    group: "Manage Foods",
     items: [
       {
         href: "/admin/foods",
