@@ -5,6 +5,7 @@ import { useCategories } from "../_services/useCategoryQueries";
 import { useDeleteCategory } from "../_services/useCategoryMutation";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash } from "lucide-react";
+import { alert } from "@/lib/useGlobalStore";
 
 export default function CategoryCards() {
   const categoriesQuery = useCategories();
@@ -31,7 +32,9 @@ export default function CategoryCards() {
               variant="ghost"
               size="icon"
               onClick={() => {
-                deleteCategoryMutation.mutate(item.id);
+                alert({
+                  onConfirm: () => deleteCategoryMutation.mutate(item.id),
+                });
               }}
             >
               <Trash />
