@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { ComponentProps } from "react";
 import { Controller, FieldValues, Path, useFormContext } from "react-hook-form";
