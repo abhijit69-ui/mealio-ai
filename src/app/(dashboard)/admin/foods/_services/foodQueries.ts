@@ -103,6 +103,7 @@ export const getFood = async (id: number): Promise<FoodSchema | null> => {
 
   return {
     action: "update",
+    id,
     name: res.name,
     calories: toStringSafe(res.calories),
     carbohydrates: toStringSafe(res.carbohydrate),
