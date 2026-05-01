@@ -14,7 +14,7 @@ export const foodFilterSchema = z.object({
   ]),
   categoryId: z.string(),
   sortBy: z
-    .enum(["name", "calories", "protein", "carbohydrates", "fat"])
+    .enum(["name", "calories", "protein", "carbohydrate", "fat"])
     .optional(),
   sortOrder: z.enum(["asc", "desc"]).optional(),
   page: z.number(),

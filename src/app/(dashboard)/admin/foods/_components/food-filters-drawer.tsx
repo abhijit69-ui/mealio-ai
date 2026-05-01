@@ -121,7 +121,7 @@ export default function FoodFiltersDrawer() {
                   options={[
                     { label: "Name", value: "name" },
                     { label: "Calories", value: "calories" },
-                    { label: "Carbohydrates", value: "carbohydrates" },
+                    { label: "Carbohydrates", value: "carbohydrate" },
                     { label: "Fat", value: "fat" },
                     { label: "Protein", value: "protein" },
                   ]}

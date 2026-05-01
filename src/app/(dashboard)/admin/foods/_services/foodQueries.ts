@@ -33,6 +33,7 @@ export const getFoods = async (
   if (searchTerm) {
     where.name = {
       contains: searchTerm,
+      mode: "insensitive",
     };
   }
 
