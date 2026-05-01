@@ -1,3 +1,5 @@
+"use server";
+
 import { PaginatedResult } from "@/lib/types/paginatedResult";
 import { foodFilterSchema, FoodFilterSchema } from "../_types/foodFilterSchema";
 import { Prisma } from "$/generated/prisma/client";

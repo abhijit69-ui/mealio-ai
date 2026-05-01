@@ -27,6 +27,7 @@ import { Plus } from "lucide-react";
 import { ControlledInput } from "@/components/ui/controlled-input";
 import { ControlledSelect } from "@/components/ui/controlled-select";
 import CategoryFormDialog from "../../categories/_components/category-form-dialog";
+import SpecifyFoodServingUnits from "./specify-food-servingunits";
 
 export default function FoodFormDialog() {
   const form = useForm<FoodSchema>({
@@ -85,11 +86,12 @@ export default function FoodFormDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={foodDialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger
         render={
           <Button>
             <Plus className="mr-2" />
+            New Food
           </Button>
         }
       />
@@ -174,6 +176,11 @@ export default function FoodFormDialog() {
                   type="number"
                   placeholder="grams"
                 />
+              </div>
+
+              {/* specify food serving unit */}
+              <div className="col-span-2">
+                <SpecifyFoodServingUnits />
               </div>
             </div>
           </FormProvider>
