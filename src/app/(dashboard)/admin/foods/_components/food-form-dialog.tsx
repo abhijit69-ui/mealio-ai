@@ -56,7 +56,10 @@ export default function FoodFormDialog() {
 
   useEffect(() => {
     if (!!selectedFoodId && foodQuery.data) {
-      form.reset(foodQuery.data);
+      form.reset({
+        ...foodQuery.data,
+        categoryId: String(foodQuery.data.categoryId ?? ""),
+      });
     }
   }, [foodQuery.data, form, selectedFoodId]);
 
@@ -147,7 +150,7 @@ export default function FoodFormDialog() {
               </div>
               <div>
                 <ControlledInput<FoodSchema>
-                  name="carbohydrates"
+                  name="carbohydrate"
                   label="Carbohydrates"
                   type="number"
                   placeholder="grams"

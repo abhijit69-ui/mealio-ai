@@ -1,14 +1,15 @@
 import { patterns } from "@/lib/constants";
 import { regexSchema, requiredStringSchema } from "@/lib/zodSchemas";
-import z from "zod";
 
-export const foodSchema = z.intersection(
+import { z } from "zod";
+
+const foodSchema = z.intersection(
   z.object({
     name: requiredStringSchema,
     calories: regexSchema(patterns.zeroTo9999),
     protein: regexSchema(patterns.zeroTo9999),
     fat: regexSchema(patterns.zeroTo9999),
-    carbohydrates: regexSchema(patterns.zeroTo9999),
+    carbohydrate: regexSchema(patterns.zeroTo9999),
     fiber: regexSchema(patterns.zeroTo9999),
     sugar: regexSchema(patterns.zeroTo9999),
     categoryId: requiredStringSchema,
@@ -25,17 +26,29 @@ export const foodSchema = z.intersection(
   ]),
 );
 
-export type FoodSchema = z.infer<typeof foodSchema>;
+type FoodSchema = z.infer<typeof foodSchema>;
 
-export const foodDefaultValues: FoodSchema = {
+const foodDefaultValues: FoodSchema = {
   action: "create",
   foodServingUnits: [],
   name: "",
   categoryId: "",
   calories: "",
-  carbohydrates: "",
+  carbohydrate: "",
   fat: "",
   fiber: "",
   protein: "",
   sugar: "",
 };
+
+const servingUnitSchema = z.intersection(
+  z.object({
+    name: requiredStringSchema,
+  }),
+  z.discriminatedUnion("action", [
+    z.object({ action: z.literal("create") }),
+    z.object({ action: z.literal("update"), id: z.number() }),
+  ]),
+);
+
+export { foodSchema, servingUnitSchema, foodDefaultValues, type FoodSchema };
