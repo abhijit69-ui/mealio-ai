@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { SignUpSchema } from "../_types/signUpSchema";
-import { signUp } from "./signUpMutation";
+import { authClient } from "@/lib/authClient";
 import { toast } from "sonner";
 
 export const useSignUp = () => {
@@ -11,7 +11,12 @@ export const useSignUp = () => {
 
   return useMutation({
     mutationFn: async (data: SignUpSchema) => {
-      await signUp(data);
+      const result = await authClient.signUp.email({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+      if (result.error) throw new Error(result.error.message);
     },
     onSuccess: () => {
       toast.success("Signed up successfully");

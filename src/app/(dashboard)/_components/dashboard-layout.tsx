@@ -28,7 +28,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ThemeToggle from "@/components/theme-toggle";
 import z from "zod";
 import { customErrorMap } from "@/lib/customErrorMap";
+import { useSignOut } from "@/app/(auth)/sign-in/_services/useSignInMutation";
+import { auth } from "@/lib/auth";
+
 z.setErrorMap(customErrorMap);
+
+// Use Better Auth's inferred session type
+type Session = typeof auth.$Infer.Session;
 
 type RouteGroupType = {
   group: string;
@@ -135,9 +141,28 @@ const RouteGroup = ({ group, items }: RouteGroupProps) => {
   );
 };
 
-type DashboardLayoutProps = { children: ReactNode };
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+type DashboardLayoutProps = { children: ReactNode; session: Session };
+
+export default function DashboardLayout({
+  children,
+  session,
+}: DashboardLayoutProps) {
   const [open, setOpen] = useState(false);
+  const signOutMutation = useSignOut();
+  const userRole = session.user.role;
+
+  const filteredRouteGroups = ROUTE_GROUPS.filter((group) => {
+    if (userRole === "admin") {
+      return (
+        group.group === "Manage Foods" ||
+        group.group === "Planner" ||
+        group.group === "Meals"
+      );
+    } else {
+      // regular users only see Planner and Meals
+      return group.group === "Planner" || group.group === "Meals";
+    }
+  });
 
   return (
     <div className="flex">
@@ -149,46 +174,43 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
           </Collapsible.Trigger>
         </Collapsible.Root>
+
         <div className="flex">
-          {/* Theme Toggle */}
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div
-                //   variant="ghost"
-                className="hover:text-accent-foreground flex h-9 items-center gap-2 px-2"
-              >
+              <div className="hover:text-accent-foreground flex h-9 items-center gap-2 px-2">
                 <Avatar className="size-8">
-                  <AvatarFallback>A</AvatarFallback>
+                  <AvatarFallback>
+                    {session.user.name?.[0]?.toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="hidden md:inline">Admin</span>
+                <span className="hidden md:inline">{session.user.name}</span>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5 text-sm font-medium">My Account</div>
               <Separator />
-
               <div className="flex items-center gap-3 px-2 py-2">
                 <Avatar className="size-10">
-                  <AvatarFallback>A</AvatarFallback>
+                  <AvatarFallback>
+                    {session.user.name?.[0]?.toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">Admin</p>
+                  <p className="text-sm font-medium">{session.user.name}</p>
                   <p className="text-muted-foreground text-xs">
-                    admin@test.com
+                    {session.user.email}
                   </p>
                 </div>
               </div>
-
               <Separator />
-
               <DropdownMenuItem
-                onClick={() => {
-                  // logout
-                }}
+                onClick={() => signOutMutation.mutate()}
                 variant="destructive"
               >
                 <LogOut className="size-4" />
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -202,10 +224,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       >
         <Collapsible.Content forceMount>
           <div
-            className={`bg-background fixed top-0 left-0 h-screen w-64 border p-4 transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
+            className={`bg-background fixed top-0 left-0 h-screen w-64 border p-4 transition-transform duration-300 ${
+              open ? "translate-x-0" : "-translate-x-full"
+            }`}
           >
             <div className="flex items-center justify-between">
-              <h1 className="font-semibold">Admin Dashboard</h1>
+              <h1 className="font-semibold">
+                {userRole === "admin" ? "Admin Dashboard" : "Dashboard"}
+              </h1>
               <Collapsible.Trigger asChild>
                 <Button size="icon" variant="outline">
                   <ChevronLeft />
@@ -214,15 +240,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <Separator className="my-2" />
             <div className="mt-4">
-              {ROUTE_GROUPS.map((routeGroup) => (
+              {filteredRouteGroups.map((routeGroup) => (
                 <RouteGroup {...routeGroup} key={routeGroup.group} />
               ))}
             </div>
           </div>
         </Collapsible.Content>
       </Collapsible.Root>
+
       <main
-        className={`transition-margin mt-13 flex-1 p-4 duration-300 ${open ? "ml-64" : "ml-0"}`}
+        className={`transition-margin mt-13 flex-1 p-4 duration-300 ${
+          open ? "ml-64" : "ml-0"
+        }`}
       >
         {children}
       </main>

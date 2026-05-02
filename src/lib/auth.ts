@@ -17,9 +17,15 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-  plugins: [
-    admin({
-      defaultRole: "user",
-    }),
-  ], // gives us role-based access
+  plugins: [admin()],
+  // ↓ this tells Better Auth to include these fields in the session
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "user",
+      },
+    },
+  },
 });

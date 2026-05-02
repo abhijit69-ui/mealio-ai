@@ -4,7 +4,14 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
   plugins: [nextCookies(), adminClient()],
+  // ↓ expose role on client side too
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+      },
+    },
+  },
 });
 
-// export session hook for convenience
 export const { useSession, signOut } = authClient;
