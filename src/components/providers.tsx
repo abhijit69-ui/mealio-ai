@@ -5,8 +5,21 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { Toaster } from "./ui/sonner";
 import { AlertDialogProvider } from "./ui/alert-dialog-provider";
+import { toast } from "sonner";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    mutations: {
+      onError: (e) => {
+        if (e.message === "NEXT_REDIRECT") return;
+        toast.error(e.message);
+      },
+      onSuccess: () => {
+        toast.success("Operation was successfull.");
+      },
+    },
+  },
+});
 
 type ProvidersProps = {
   children: ReactNode;
