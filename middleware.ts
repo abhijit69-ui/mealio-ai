@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
       headers: { cookie: request.headers.get("cookie") ?? "" },
     },
   );
-  //   console.log("MIDDLEWARE SESSION:", JSON.stringify(session, null, 2));
+  console.log("MIDDLEWARE SESSION:", JSON.stringify(session, null, 2));
 
   const role = session?.user?.role;
 

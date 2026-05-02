@@ -50,7 +50,7 @@ const ROUTE_GROUPS: RouteGroupType[] = [
     group: "Planner",
     items: [
       {
-        href: "/admin/planner",
+        href: "/client",
         label: "Weekly Plan",
         icon: <Calendar className="mr-2 size-3" />,
       },
@@ -60,7 +60,7 @@ const ROUTE_GROUPS: RouteGroupType[] = [
     group: "Meals",
     items: [
       {
-        href: "/admin/meals",
+        href: "/client",
         label: "All Meals",
         icon: <Utensils className="mr-2 size-3" />,
       },
