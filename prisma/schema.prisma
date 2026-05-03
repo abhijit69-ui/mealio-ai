@@ -13,7 +13,7 @@ datasource db {
 }
 
 model User {
-  id            String       @id 
+  id            String     @id
   name          String
   email         String     @unique
   password      String?
@@ -41,6 +41,8 @@ enum Role {
 model Food {
   id               Int               @id @default(autoincrement())
   name             String            @unique
+  image            String?
+  description      String?
   calories         Float?
   protein          Float?
   fat              Float?
@@ -110,6 +112,9 @@ model MealPlan {
   id        Int      @id @default(autoincrement())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  name      String   @default("My Weekly Plan")
+  startDate DateTime
+  endDate   DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -167,7 +172,7 @@ model Session {
   updatedAt      DateTime @updatedAt
   ipAddress      String?
   userAgent      String?
-  userId         String                                                   // ← String to Int
+  userId         String // ← String to Int
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   impersonatedBy String?
 
@@ -180,7 +185,7 @@ model Account {
   id                    String    @id
   accountId             String
   providerId            String
-  userId                String                                             // ← String to Int
+  userId                String // ← String to Int
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
