@@ -9,7 +9,11 @@ import { toStringSafe } from "@/lib/utils";
 
 type FoodWithServingUnits = Prisma.FoodGetPayload<{
   include: {
-    foodServingUnits: true;
+    foodServingUnits: {
+      include: {
+        servingUnit: true;
+      };
+    };
   };
 }>;
 export const getFoods = async (
@@ -80,7 +84,11 @@ export const getFoods = async (
       skip,
       take: pageSize,
       include: {
-        foodServingUnits: true,
+        foodServingUnits: {
+          include: {
+            servingUnit: true,
+          },
+        },
       },
     }),
   ]);
@@ -98,7 +106,11 @@ export const getFood = async (id: number): Promise<FoodSchema | null> => {
   const res = await db.food.findFirst({
     where: { id },
     include: {
-      foodServingUnits: true,
+      foodServingUnits: {
+        include: {
+          servingUnit: true,
+        },
+      },
     },
   });
 
