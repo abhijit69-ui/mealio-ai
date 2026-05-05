@@ -9,6 +9,7 @@ import {
 } from "./mealPlanMutation";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Day, MealType } from "../_types/plannerTypes";
 
 export const useCreatePlan = (userId: string) => {
   const router = useRouter();
@@ -38,7 +39,18 @@ export const useDeletePlan = () => {
 export const useAssignMeal = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: assignMealToPlanSlot,
+    mutationFn: (data: {
+      planId: number;
+      day: Day;
+      type: MealType;
+      userId: string;
+      mealFoods: {
+        foodId: number;
+        servingUnitId: number;
+        servingUnitName?: string; // ← add this
+        amount: number;
+      }[];
+    }) => assignMealToPlanSlot(data),
     onSuccess: () => {
       toast.success("Meal saved");
       queryClient.invalidateQueries({ queryKey: ["plan"] });

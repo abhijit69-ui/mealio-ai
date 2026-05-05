@@ -83,6 +83,17 @@ export const deletePlan = async (planId: number) => {
   });
 };
 
+// finds existing serving unit by name or creates a new one
+const findOrCreateServingUnit = async (name: string): Promise<number> => {
+  const existing = await db.servingUnit.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+  });
+  if (existing) return existing.id;
+
+  const created = await db.servingUnit.create({ data: { name } });
+  return created.id;
+};
+
 export const assignMealToPlanSlot = async ({
   planId,
   day,
@@ -94,7 +105,12 @@ export const assignMealToPlanSlot = async ({
   day: Day;
   type: MealType;
   userId: string;
-  mealFoods: { foodId: number; servingUnitId: number; amount: number }[];
+  mealFoods: {
+    foodId: number;
+    servingUnitId: number;
+    servingUnitName?: string; // ← used for personal foods with no unit yet
+    amount: number;
+  }[];
 }) => {
   await executeAction({
     actionFn: async () => {
@@ -115,16 +131,26 @@ export const assignMealToPlanSlot = async ({
       });
 
       await Promise.all(
-        mealFoods.map((f) =>
-          db.mealFood.create({
+        mealFoods.map(async (f) => {
+          // resolve servingUnitId — if 0, find or create by name
+          let resolvedServingUnitId = f.servingUnitId;
+          if (resolvedServingUnitId === 0 && f.servingUnitName) {
+            resolvedServingUnitId = await findOrCreateServingUnit(
+              f.servingUnitName,
+            );
+          } else if (resolvedServingUnitId === 0) {
+            resolvedServingUnitId = await findOrCreateServingUnit("serving");
+          }
+
+          return db.mealFood.create({
             data: {
               mealId: meal.id,
               foodId: f.foodId,
-              servingUnitId: f.servingUnitId,
+              servingUnitId: resolvedServingUnitId,
               amount: f.amount,
             },
-          }),
-        ),
+          });
+        }),
       );
 
       await db.mealPlanItem.create({
@@ -146,4 +172,55 @@ export const removeMealFromSlot = async (planItemId: number) => {
       await db.meal.delete({ where: { id: item.mealId } });
     },
   });
+};
+
+export type ServingUnitEntry = {
+  name: string;
+  grams: number;
+};
+
+export const createPersonalFood = async ({
+  userId,
+  name,
+  calories,
+  protein,
+  carbohydrate,
+  fat,
+  servingUnits,
+}: {
+  userId: string;
+  name: string;
+  calories: string;
+  protein: string;
+  carbohydrate: string;
+  fat: string;
+  servingUnits: ServingUnitEntry[];
+}) => {
+  // no executeAction wrapper — we need to return the food object
+  const food = await db.food.create({
+    data: {
+      name,
+      userId,
+      isPublic: false,
+      calories: calories ? Number(calories) : null,
+      protein: protein ? Number(protein) : null,
+      carbohydrate: carbohydrate ? Number(carbohydrate) : null,
+      fat: fat ? Number(fat) : null,
+    },
+  });
+
+  await Promise.all(
+    servingUnits.map(async (unit) => {
+      const servingUnitId = await findOrCreateServingUnit(unit.name);
+      await db.foodServingUnit.create({
+        data: {
+          foodId: food.id,
+          servingUnitId,
+          grams: unit.grams,
+        },
+      });
+    }),
+  );
+
+  return food; // ← returns { id, name, ... }
 };

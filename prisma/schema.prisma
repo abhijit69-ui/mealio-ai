@@ -29,6 +29,7 @@ model User {
   banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
+  foods         Food[]     // ← add this relation
 
   @@map("user")
 }
@@ -40,7 +41,7 @@ enum Role {
 
 model Food {
   id               Int               @id @default(autoincrement())
-  name             String            @unique
+  name             String            // ← remove @unique (users can have same-named personal foods)
   image            String?
   description      String?
   calories         Float?
@@ -53,8 +54,14 @@ model Food {
   updatedAt        DateTime          @updatedAt
   category         Category?         @relation(fields: [categoryId], references: [id])
   categoryId       Int?
+  // ↓ new fields
+  userId           String?           // null = global (admin), set = personal (user)
+  user             User?             @relation(fields: [userId], references: [id])
+  isPublic         Boolean           @default(false) // admin foods = true, user foods = false
   foodServingUnits FoodServingUnit[]
   mealFoods        MealFood[]
+
+  @@unique([name, userId]) // ← unique per user, not globally
 }
 
 model Category {
