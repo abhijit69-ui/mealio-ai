@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format, addDays, getDay } from "date-fns"; // ← add getDay
+import { format, addDays, getDay } from "date-fns";
 import MealCard from "./meal-card";
 import AddMealDialog from "./add-meal-dialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { Day, MealType } from "$/generated/prisma/client";
 import { MealPlanWithItems, MealSlot } from "../_types/plannerTypes";
 
-// Maps date-fns getDay() result (0=Sun, 1=Mon...) to Prisma Day enum
 const DATE_INDEX_TO_DAY: Day[] = [
   "SUNDAY",
   "MONDAY",
@@ -30,7 +29,6 @@ type Props = { plan: MealPlanWithItems; userId: string };
 export default function PlannerView({ plan, userId }: Props) {
   const router = useRouter();
 
-  // derive the 7 Day enum values from the actual startDate
   const planDays: Day[] = Array.from({ length: 7 }, (_, i) => {
     const date = addDays(new Date(plan.startDate), i);
     return DATE_INDEX_TO_DAY[getDay(date)];
@@ -50,18 +48,23 @@ export default function PlannerView({ plan, userId }: Props) {
   const selectedDayIndex = planDays.indexOf(selectedDay);
 
   return (
-    <div className="space-y-6 p-6">
+    // FIX: p-3 on mobile instead of p-6, scales up on larger screens
+    <div className="space-y-4 p-3 sm:p-4 md:space-y-6 md:p-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <Button
           variant="ghost"
           size="icon"
+          className="shrink-0"
           onClick={() => router.push("/client/planner")}
         >
           <ArrowLeft className="size-4" />
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold">{plan.name}</h1>
+        <div className="min-w-0">
+          {/* FIX: truncate long plan names on mobile */}
+          <h1 className="truncate text-xl font-bold sm:text-2xl">
+            {plan.name}
+          </h1>
           <p className="text-muted-foreground text-sm">
             {format(new Date(plan.startDate), "MMM d")} –{" "}
             {format(new Date(plan.endDate), "MMM d, yyyy")}
@@ -69,37 +72,41 @@ export default function PlannerView({ plan, userId }: Props) {
         </div>
       </div>
 
-      {/* Day Selector — derived from actual dates */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {planDays.map((day, i) => {
-          const date = addDays(new Date(plan.startDate), i);
-          const isSelected = selectedDay === day;
-          const dayOfWeek = getDay(date);
-          return (
-            <button
-              key={day}
-              onClick={() => setSelectedDay(day)}
-              className={`flex min-w-[72px] flex-col items-center rounded-xl px-4 py-3 transition-all ${
-                isSelected
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card hover:bg-muted border"
-              }`}
-            >
-              <span className="text-sm font-medium">
-                {DAY_LABELS[dayOfWeek]}
-              </span>
-              <span
-                className={`text-xs ${isSelected ? "opacity-80" : "text-muted-foreground"}`}
+      {/* Day Selector */}
+      {/* FIX: -mx compensates for parent padding so scroll reaches edges on mobile */}
+      <div className="-mx-3 sm:-mx-4 md:-mx-6">
+        <div className="flex gap-2 overflow-x-auto px-3 pb-2 sm:px-4 md:px-6">
+          {planDays.map((day, i) => {
+            const date = addDays(new Date(plan.startDate), i);
+            const isSelected = selectedDay === day;
+            const dayOfWeek = getDay(date);
+            return (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                // FIX: shrink-0 prevents buttons from compressing, they scroll instead
+                className={`flex shrink-0 flex-col items-center rounded-xl px-3 py-2.5 transition-all sm:px-4 sm:py-3 ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card hover:bg-muted border"
+                }`}
               >
-                {format(date, "MMM d")}
-              </span>
-            </button>
-          );
-        })}
+                <span className="text-xs font-medium sm:text-sm">
+                  {DAY_LABELS[dayOfWeek]}
+                </span>
+                <span
+                  className={`text-xs ${isSelected ? "opacity-80" : "text-muted-foreground"}`}
+                >
+                  {format(date, "MMM d")}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Day label */}
-      <h2 className="text-lg font-semibold">
+      <h2 className="text-base font-semibold sm:text-lg">
         {format(
           addDays(new Date(plan.startDate), selectedDayIndex),
           "EEEE, MMMM d",
@@ -107,7 +114,8 @@ export default function PlannerView({ plan, userId }: Props) {
       </h2>
 
       {/* Meal Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      {/* FIX: single column on mobile, 3 cols on md+ (was already correct but kept explicit) */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
         {MEAL_TYPES.map((type) => (
           <MealCard
             key={type}
