@@ -20,6 +20,8 @@ export const createFood = async (data: FoodSchema) => {
           sugar: toNumberSafe(validatedData.sugar),
           protein: toNumberSafe(validatedData.protein),
           categoryId: toNumberSafe(validatedData.categoryId) || null,
+          isPublic: true, // ← admin foods are always global
+          userId: null, // ← no owner, belongs to everyone
         },
       });
 
@@ -83,7 +85,6 @@ export const deleteFood = async (id: number) => {
       await db.foodServingUnit.deleteMany({
         where: { foodId: id },
       });
-
       await db.food.delete({ where: { id } });
     },
   });

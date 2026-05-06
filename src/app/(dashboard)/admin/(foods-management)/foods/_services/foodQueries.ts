@@ -16,6 +16,7 @@ type FoodWithServingUnits = Prisma.FoodGetPayload<{
     };
   };
 }>;
+
 export const getFoods = async (
   filters: FoodFilterSchema,
 ): Promise<PaginatedResult<FoodWithServingUnits>> => {
@@ -32,13 +33,14 @@ export const getFoods = async (
     pageSize,
   } = validatedFilters;
 
-  const where: Prisma.FoodWhereInput = {};
+  // admin panel only shows global foods
+  const where: Prisma.FoodWhereInput = {
+    isPublic: true,
+    userId: null,
+  };
 
   if (searchTerm) {
-    where.name = {
-      contains: searchTerm,
-      mode: "insensitive",
-    };
+    where.name = { contains: searchTerm, mode: "insensitive" };
   }
 
   const [minCaloriesStr, maxCaloriesStr] = caloriesRange;
@@ -69,9 +71,7 @@ export const getFoods = async (
 
   const numericCategoryId = categoryId ? Number(categoryId) : undefined;
   if (numericCategoryId !== undefined && numericCategoryId !== 0) {
-    where.category = {
-      id: numericCategoryId,
-    };
+    where.category = { id: numericCategoryId };
   }
 
   const skip = (page - 1) * pageSize;
@@ -85,9 +85,7 @@ export const getFoods = async (
       take: pageSize,
       include: {
         foodServingUnits: {
-          include: {
-            servingUnit: true,
-          },
+          include: { servingUnit: true },
         },
       },
     }),
@@ -102,14 +100,39 @@ export const getFoods = async (
   };
 };
 
+// used in client meal dialog — shows global foods + user's personal foods
+export const getFoodsForMeal = async (
+  userId: string,
+  searchTerm?: string,
+): Promise<FoodWithServingUnits[]> => {
+  const where: Prisma.FoodWhereInput = {
+    OR: [
+      { isPublic: true, userId: null }, // global admin foods
+      { userId }, // user's personal foods
+    ],
+  };
+
+  if (searchTerm) {
+    where.name = { contains: searchTerm, mode: "insensitive" };
+  }
+
+  return await db.food.findMany({
+    where,
+    orderBy: { name: "asc" },
+    include: {
+      foodServingUnits: {
+        include: { servingUnit: true },
+      },
+    },
+  });
+};
+
 export const getFood = async (id: number): Promise<FoodSchema | null> => {
   const res = await db.food.findFirst({
     where: { id },
     include: {
       foodServingUnits: {
-        include: {
-          servingUnit: true,
-        },
+        include: { servingUnit: true },
       },
     },
   });

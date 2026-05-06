@@ -10,6 +10,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CalendarDays, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDeletePlan } from "../_services/useMealPlanMutation";
@@ -24,8 +34,16 @@ type Props = { plans: Plan[]; userId: string };
 
 export default function PlansListView({ plans, userId }: Props) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
   const router = useRouter();
   const deletePlan = useDeletePlan();
+
+  const handleConfirmDelete = () => {
+    if (!planToDelete) return;
+    deletePlan.mutate(planToDelete.id, {
+      onSuccess: () => setPlanToDelete(null),
+    });
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -96,7 +114,7 @@ export default function PlansListView({ plans, userId }: Props) {
                         variant="destructive"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deletePlan.mutate(plan.id);
+                          setPlanToDelete(plan);
                         }}
                       >
                         <Trash2 className="mr-2 size-4" />
@@ -116,6 +134,37 @@ export default function PlansListView({ plans, userId }: Props) {
         userId={userId}
         onClose={() => setCreateOpen(false)}
       />
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={!!planToDelete}
+        onOpenChange={(o) => !o && setPlanToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Plan</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="text-foreground font-medium">
+                {planToDelete?.name}
+              </span>
+              ? This will permanently remove the plan and all its meals. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPlanToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletePlan.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
