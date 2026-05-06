@@ -68,16 +68,7 @@ export const createPlan = async ({
 export const deletePlan = async (planId: number) => {
   await executeAction({
     actionFn: async () => {
-      const items = await db.mealPlanItem.findMany({ where: { planId } });
-      await Promise.all(
-        items.map((item) =>
-          db.mealFood.deleteMany({ where: { mealId: item.mealId } }),
-        ),
-      );
-      await db.mealPlanItem.deleteMany({ where: { planId } });
-      await Promise.all(
-        items.map((item) => db.meal.delete({ where: { id: item.mealId } })),
-      );
+      // cascade handles MealPlanItems → Meals → MealFoods automatically
       await db.mealPlan.delete({ where: { id: planId } });
     },
   });
@@ -186,6 +177,7 @@ export const createPersonalFood = async ({
   protein,
   carbohydrate,
   fat,
+  description,
   servingUnits,
 }: {
   userId: string;
@@ -194,14 +186,15 @@ export const createPersonalFood = async ({
   protein: string;
   carbohydrate: string;
   fat: string;
+  description: string;
   servingUnits: ServingUnitEntry[];
 }) => {
-  // no executeAction wrapper — we need to return the food object
   const food = await db.food.create({
     data: {
       name,
       userId,
       isPublic: false,
+      description: description || null, // ← add
       calories: calories ? Number(calories) : null,
       protein: protein ? Number(protein) : null,
       carbohydrate: carbohydrate ? Number(carbohydrate) : null,
@@ -213,14 +206,10 @@ export const createPersonalFood = async ({
     servingUnits.map(async (unit) => {
       const servingUnitId = await findOrCreateServingUnit(unit.name);
       await db.foodServingUnit.create({
-        data: {
-          foodId: food.id,
-          servingUnitId,
-          grams: unit.grams,
-        },
+        data: { foodId: food.id, servingUnitId, grams: unit.grams },
       });
     }),
   );
 
-  return food; // ← returns { id, name, ... }
+  return food;
 };

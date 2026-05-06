@@ -29,7 +29,7 @@ model User {
   banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
-  foods         Food[]     // ← add this relation
+  foods         Food[] // ← add this relation
 
   @@map("user")
 }
@@ -41,7 +41,7 @@ enum Role {
 
 model Food {
   id               Int               @id @default(autoincrement())
-  name             String            // ← remove @unique (users can have same-named personal foods)
+  name             String // ← remove @unique (users can have same-named personal foods)
   image            String?
   description      String?
   calories         Float?
@@ -55,7 +55,7 @@ model Food {
   category         Category?         @relation(fields: [categoryId], references: [id])
   categoryId       Int?
   // ↓ new fields
-  userId           String?           // null = global (admin), set = personal (user)
+  userId           String? // null = global (admin), set = personal (user)
   user             User?             @relation(fields: [userId], references: [id])
   isPublic         Boolean           @default(false) // admin foods = true, user foods = false
   foodServingUnits FoodServingUnit[]
@@ -134,10 +134,10 @@ model MealPlanItem {
   id Int @id @default(autoincrement())
 
   planId Int
-  plan   MealPlan @relation(fields: [planId], references: [id])
+  plan   MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   mealId Int
-  meal   Meal @relation(fields: [mealId], references: [id])
+  meal   Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
 
   day  Day // "Monday", "Tuesday" etc.
   type MealType
@@ -162,7 +162,7 @@ model MealFood {
   id            Int         @id @default(autoincrement())
   food          Food        @relation(fields: [foodId], references: [id])
   foodId        Int
-  meal          Meal        @relation(fields: [mealId], references: [id])
+  meal          Meal        @relation(fields: [mealId], references: [id], onDelete: Cascade)
   mealId        Int
   servingUnit   ServingUnit @relation(fields: [servingUnitId], references: [id])
   servingUnitId Int
