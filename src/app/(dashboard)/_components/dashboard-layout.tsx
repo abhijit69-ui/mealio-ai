@@ -33,7 +33,6 @@ import { auth } from "@/lib/auth";
 
 z.setErrorMap(customErrorMap);
 
-// Use Better Auth's inferred session type
 type Session = typeof auth.$Infer.Session;
 
 type RouteGroupType = {
@@ -88,7 +87,6 @@ const ROUTE_GROUPS: RouteGroupType[] = [
   },
 ];
 
-// -------------- Route Group Component --------------
 type RouteGroupProps = RouteGroupType;
 
 const RouteGroup = ({ group, items }: RouteGroupProps) => {
@@ -159,14 +157,15 @@ export default function DashboardLayout({
         group.group === "Meals"
       );
     } else {
-      // regular users only see Planner and Meals
       return group.group === "Planner" || group.group === "Meals";
     }
   });
 
   return (
-    <div className="flex">
-      <div className="bg-background fixed z-10 flex h-13 w-screen items-center justify-between border px-2">
+    // FIX: overflow-hidden on root prevents any child from causing horizontal scroll
+    <div className="flex overflow-hidden">
+      {/* Top navbar */}
+      <div className="bg-background fixed z-10 flex h-13 w-full items-center justify-between border px-2">
         <Collapsible.Root className="h-full" open={open} onOpenChange={setOpen}>
           <Collapsible.Trigger className="m-2" asChild>
             <Button size="icon" variant="outline">
@@ -217,44 +216,38 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      <Collapsible.Root
-        className="fixed top-0 left-0 z-20 h-dvh"
-        open={open}
-        onOpenChange={setOpen}
-      >
-        <Collapsible.Content forceMount>
-          <div
-            className={`bg-background fixed top-0 left-0 h-screen w-64 border p-4 transition-transform duration-300 ${
-              open ? "translate-x-0" : "-translate-x-full"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <h1 className="font-semibold">
-                {userRole === "admin" ? "Admin Dashboard" : "Dashboard"}
-              </h1>
-              <Collapsible.Trigger asChild>
-                <Button size="icon" variant="outline">
-                  <ChevronLeft />
-                </Button>
-              </Collapsible.Trigger>
-            </div>
-            <Separator className="my-2" />
-            <div className="mt-4">
-              {filteredRouteGroups.map((routeGroup) => (
-                <RouteGroup {...routeGroup} key={routeGroup.group} />
-              ))}
-            </div>
-          </div>
-        </Collapsible.Content>
-      </Collapsible.Root>
+      {/* FIX: Backdrop overlay — tapping outside closes sidebar on mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 z-10 bg-black/40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
-      <main
-        className={`transition-margin mt-13 flex-1 p-4 duration-300 ${
-          open ? "ml-64" : "ml-0"
+      {/* Sidebar — always overlays on mobile, never pushes content */}
+      <div
+        className={`bg-background fixed top-0 left-0 z-20 h-screen w-64 border p-4 transition-transform duration-300 ${
+          open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {children}
-      </main>
+        <div className="flex items-center justify-between">
+          <h1 className="font-semibold">
+            {userRole === "admin" ? "Admin Dashboard" : "Dashboard"}
+          </h1>
+          <Button size="icon" variant="outline" onClick={() => setOpen(false)}>
+            <ChevronLeft />
+          </Button>
+        </div>
+        <Separator className="my-2" />
+        <div className="mt-4">
+          {filteredRouteGroups.map((routeGroup) => (
+            <RouteGroup {...routeGroup} key={routeGroup.group} />
+          ))}
+        </div>
+      </div>
+
+      {/* FIX: main never gets ml-64 on mobile — sidebar overlays instead of pushing */}
+      <main className="mt-13 w-full min-w-0 flex-1 p-2 sm:p-4">{children}</main>
     </div>
   );
 }
