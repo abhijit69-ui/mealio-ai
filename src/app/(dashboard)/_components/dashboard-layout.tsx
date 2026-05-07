@@ -30,6 +30,7 @@ import z from "zod";
 import { customErrorMap } from "@/lib/customErrorMap";
 import { useSignOut } from "@/app/(auth)/sign-in/_services/useSignInMutation";
 import { auth } from "@/lib/auth";
+import Image from "next/image";
 
 z.setErrorMap(customErrorMap);
 
@@ -172,7 +173,32 @@ export default function DashboardLayout({
               <Menu />
             </Button>
           </Collapsible.Trigger>
+
+          {/* <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="Mealio.ai" width={32} height={32} />
+            <span className="text-base font-bold tracking-tight">
+              Mealio<span className="text-primary">.ai</span>
+            </span>
+          </Link> */}
         </Collapsible.Root>
+
+        <Link
+          href="/"
+          className="absolute left-1/2 flex -translate-x-1/2 items-center gap-2 select-none"
+        >
+          {/* Bowl icon from /public/logo.png */}
+          <Image
+            src="/logo.png"
+            alt="Mealio.ai logo"
+            width={28}
+            height={28}
+            className="size-8 object-contain"
+          />
+          {/* Wordmark — "Mealio" in foreground, ".ai" in primary lime */}
+          <span className="pt-1 text-base font-bold tracking-tight">
+            Mealio<span className="text-primary">.ai</span>
+          </span>
+        </Link>
 
         <div className="flex">
           <ThemeToggle />
