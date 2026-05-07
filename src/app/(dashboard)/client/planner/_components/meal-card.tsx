@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"; // ← add useState
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import {
 import Image from "next/image";
 import { useRemoveMeal } from "../_services/useMealPlanMutation";
 import { MealFood, MealSlot, MealType } from "../_types/plannerTypes";
-import MealDetailSheet from "./meal-detail-sheet"; // ← add import
+import MealDetailSheet from "./meal-detail-sheet";
 
 const MEAL_ICONS: Record<MealType, string> = {
   BREAKFAST: "🌤️",
@@ -43,7 +43,7 @@ type Props = {
 };
 
 export default function MealCard({ type, slot, onAdd }: Props) {
-  const [detailOpen, setDetailOpen] = useState(false); // ← add
+  const [detailOpen, setDetailOpen] = useState(false);
   const removeMutation = useRemoveMeal();
 
   const totalNutrition =
@@ -63,7 +63,7 @@ export default function MealCard({ type, slot, onAdd }: Props) {
   return (
     <>
       <Card className="flex flex-col overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between p-4 pb-0">
+        <CardHeader className="flex flex-row items-center justify-between p-3 pb-0 sm:p-4 sm:pb-0">
           <div className="flex items-center gap-2">
             <span>{MEAL_ICONS[type]}</span>
             <span className="font-semibold">{MEAL_LABELS[type]}</span>
@@ -72,7 +72,11 @@ export default function MealCard({ type, slot, onAdd }: Props) {
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant="ghost" size="icon" className="size-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 shrink-0"
+                  >
                     <MoreHorizontal className="size-4" />
                   </Button>
                 }
@@ -90,11 +94,11 @@ export default function MealCard({ type, slot, onAdd }: Props) {
           )}
         </CardHeader>
 
-        <CardContent className="flex flex-1 flex-col gap-3 p-4">
+        <CardContent className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
           {slot ? (
             <>
               {slot.meal?.mealFoods?.[0]?.food?.image ? (
-                <div className="relative h-40 w-full overflow-hidden rounded-lg">
+                <div className="relative h-36 w-full overflow-hidden rounded-lg sm:h-40">
                   <Image
                     src={slot.meal.mealFoods[0].food.image}
                     alt={slot.meal.mealFoods[0].food.name}
@@ -103,7 +107,7 @@ export default function MealCard({ type, slot, onAdd }: Props) {
                   />
                 </div>
               ) : (
-                <div className="bg-muted flex h-40 items-center justify-center rounded-lg">
+                <div className="bg-muted flex h-36 items-center justify-center rounded-lg sm:h-40">
                   <span className="text-4xl">🍽️</span>
                 </div>
               )}
@@ -113,32 +117,33 @@ export default function MealCard({ type, slot, onAdd }: Props) {
                   {slot.meal?.mealFoods?.map((mf) => mf.food.name).join(", ")}
                 </p>
                 {slot.meal?.mealFoods?.[0]?.food?.description && (
-                  <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
+                  // FIX: line-clamp-1 = single line with ellipsis.
+                  // Full description is always accessible in the detail sheet.
+                  <p className="text-muted-foreground mt-1 line-clamp-1 text-sm">
                     {slot.meal.mealFoods[0].food.description}
                   </p>
                 )}
               </div>
 
-              <div className="mt-auto flex flex-wrap gap-3 text-sm">
+              <div className="mt-auto grid grid-cols-2 gap-x-2 gap-y-1 text-xs sm:flex sm:flex-wrap sm:gap-3 sm:text-sm">
                 <span className="flex items-center gap-1">
-                  <Flame className="size-3 text-orange-400" />
+                  <Flame className="size-3 shrink-0 text-orange-400" />
                   {Math.round(totalNutrition.calories)} kcal
                 </span>
                 <span className="flex items-center gap-1">
-                  <Beef className="size-3 text-red-400" />
+                  <Beef className="size-3 shrink-0 text-red-400" />
                   {Math.round(totalNutrition.protein)}g P
                 </span>
                 <span className="flex items-center gap-1">
-                  <Wheat className="size-3 text-yellow-400" />
+                  <Wheat className="size-3 shrink-0 text-yellow-400" />
                   {Math.round(totalNutrition.carbs)}g C
                 </span>
                 <span className="flex items-center gap-1">
-                  <Droplets className="size-3 text-blue-400" />
+                  <Droplets className="size-3 shrink-0 text-blue-400" />
                   {Math.round(totalNutrition.fat)}g F
                 </span>
               </div>
 
-              {/* ← changed: now opens detail sheet */}
               <Button
                 variant="outline"
                 className="w-full"
@@ -164,7 +169,6 @@ export default function MealCard({ type, slot, onAdd }: Props) {
         </CardContent>
       </Card>
 
-      {/* Detail sheet — rendered outside card to avoid nesting issues */}
       {slot && (
         <MealDetailSheet
           open={detailOpen}
