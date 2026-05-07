@@ -23,7 +23,7 @@ export const useSignIn = () => {
       if (role === "admin") {
         router.replace("/admin/foods");
       } else {
-        router.replace("/client");
+        router.replace("/client/planner");
       }
     },
     onError: (error) => {
