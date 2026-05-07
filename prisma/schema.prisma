@@ -85,7 +85,7 @@ model ServingUnit {
 
 model FoodServingUnit {
   id            Int         @id @default(autoincrement())
-  food          Food        @relation(fields: [foodId], references: [id])
+  food          Food        @relation(fields: [foodId], references: [id], onDelete: Cascade)
   foodId        Int
   servingUnit   ServingUnit @relation(fields: [servingUnitId], references: [id])
   servingUnitId Int
@@ -118,7 +118,7 @@ enum MealType {
 model MealPlan {
   id        Int      @id @default(autoincrement())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String   @default("My Weekly Plan")
   startDate DateTime
   endDate   DateTime
@@ -160,7 +160,7 @@ enum Day {
 
 model MealFood {
   id            Int         @id @default(autoincrement())
-  food          Food        @relation(fields: [foodId], references: [id])
+  food          Food        @relation(fields: [foodId], references: [id], onDelete: Cascade)
   foodId        Int
   meal          Meal        @relation(fields: [mealId], references: [id], onDelete: Cascade)
   mealId        Int

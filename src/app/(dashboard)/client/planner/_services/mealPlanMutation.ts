@@ -4,6 +4,7 @@ import db from "@/lib/db";
 import { executeAction } from "@/lib/executeAction";
 import { addDays, startOfWeek, endOfWeek } from "date-fns";
 import { Day, MealType } from "$/generated/prisma/client";
+import { revalidatePath } from "next/cache"; // ← add
 
 const planInclude = {
   items: {
@@ -60,27 +61,27 @@ export const createPlan = async ({
   startDate: Date;
 }) => {
   const endDate = addDays(startDate, 6);
-  return await db.mealPlan.create({
+  const plan = await db.mealPlan.create({
     data: { userId, name, startDate, endDate },
   });
+  revalidatePath("/client/planner"); // ← revalidate list page
+  return plan;
 };
 
 export const deletePlan = async (planId: number) => {
   await executeAction({
     actionFn: async () => {
-      // cascade handles MealPlanItems → Meals → MealFoods automatically
       await db.mealPlan.delete({ where: { id: planId } });
+      revalidatePath("/client/planner"); // ← revalidate list page
     },
   });
 };
 
-// finds existing serving unit by name or creates a new one
 const findOrCreateServingUnit = async (name: string): Promise<number> => {
   const existing = await db.servingUnit.findFirst({
     where: { name: { equals: name, mode: "insensitive" } },
   });
   if (existing) return existing.id;
-
   const created = await db.servingUnit.create({ data: { name } });
   return created.id;
 };
@@ -99,7 +100,7 @@ export const assignMealToPlanSlot = async ({
   mealFoods: {
     foodId: number;
     servingUnitId: number;
-    servingUnitName?: string; // ← used for personal foods with no unit yet
+    servingUnitName?: string;
     amount: number;
   }[];
 }) => {
@@ -123,7 +124,6 @@ export const assignMealToPlanSlot = async ({
 
       await Promise.all(
         mealFoods.map(async (f) => {
-          // resolve servingUnitId — if 0, find or create by name
           let resolvedServingUnitId = f.servingUnitId;
           if (resolvedServingUnitId === 0 && f.servingUnitName) {
             resolvedServingUnitId = await findOrCreateServingUnit(
@@ -132,7 +132,6 @@ export const assignMealToPlanSlot = async ({
           } else if (resolvedServingUnitId === 0) {
             resolvedServingUnitId = await findOrCreateServingUnit("serving");
           }
-
           return db.mealFood.create({
             data: {
               mealId: meal.id,
@@ -147,6 +146,9 @@ export const assignMealToPlanSlot = async ({
       await db.mealPlanItem.create({
         data: { planId, mealId: meal.id, day, type },
       });
+
+      revalidatePath(`/client/planner/${planId}`); // ← revalidate plan detail
+      revalidatePath("/client/planner");
     },
   });
 };
@@ -161,6 +163,9 @@ export const removeMealFromSlot = async (planItemId: number) => {
       await db.mealFood.deleteMany({ where: { mealId: item.mealId } });
       await db.mealPlanItem.delete({ where: { id: planItemId } });
       await db.meal.delete({ where: { id: item.mealId } });
+
+      revalidatePath(`/client/planner/${item.planId}`); // ← revalidate plan detail
+      revalidatePath("/client/planner");
     },
   });
 };
@@ -194,7 +199,7 @@ export const createPersonalFood = async ({
       name,
       userId,
       isPublic: false,
-      description: description || null, // ← add
+      description: description || null,
       calories: calories ? Number(calories) : null,
       protein: protein ? Number(protein) : null,
       carbohydrate: carbohydrate ? Number(carbohydrate) : null,
@@ -211,5 +216,15 @@ export const createPersonalFood = async ({
     }),
   );
 
+  // no revalidatePath needed — food list is client-side via React Query
   return food;
+};
+
+export const deletePersonalFood = async (foodId: number) => {
+  await executeAction({
+    actionFn: async () => {
+      await db.food.delete({ where: { id: foodId } });
+      // no revalidatePath needed — food list is client-side via React Query
+    },
+  });
 };

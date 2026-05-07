@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   assignMealToPlanSlot,
   createPlan,
@@ -25,19 +25,19 @@ export const useCreatePlan = (userId: string) => {
 };
 
 export const useDeletePlan = () => {
-  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: (planId: number) => deletePlan(planId),
     onSuccess: () => {
       toast.success("Plan deleted");
-      queryClient.invalidateQueries({ queryKey: ["plans"] });
+      router.refresh(); // ← replaces invalidateQueries — re-runs server component
     },
     onError: () => toast.error("Failed to delete plan"),
   });
 };
 
 export const useAssignMeal = () => {
-  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: (data: {
       planId: number;
@@ -47,25 +47,25 @@ export const useAssignMeal = () => {
       mealFoods: {
         foodId: number;
         servingUnitId: number;
-        servingUnitName?: string; // ← add this
+        servingUnitName?: string;
         amount: number;
       }[];
     }) => assignMealToPlanSlot(data),
     onSuccess: () => {
       toast.success("Meal saved");
-      queryClient.invalidateQueries({ queryKey: ["plan"] });
+      router.refresh(); // ← re-runs server component with fresh data
     },
     onError: () => toast.error("Failed to save meal"),
   });
 };
 
 export const useRemoveMeal = () => {
-  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: (planItemId: number) => removeMealFromSlot(planItemId),
     onSuccess: () => {
       toast.success("Meal removed");
-      queryClient.invalidateQueries({ queryKey: ["plan"] });
+      router.refresh(); // ← re-runs server component with fresh data
     },
     onError: () => toast.error("Failed to remove meal"),
   });

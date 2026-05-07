@@ -18,9 +18,20 @@ import { getFoodsForMeal } from "@/app/(dashboard)/admin/(foods-management)/food
 import { Day, MealType, Prisma } from "$/generated/prisma/client";
 import {
   createPersonalFood,
+  deletePersonalFood,
   ServingUnitEntry,
 } from "../_services/mealPlanMutation";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type FoodWithServingUnits = Prisma.FoodGetPayload<{
   include: { foodServingUnits: { include: { servingUnit: true } } };
@@ -85,6 +96,7 @@ export default function AddMealDialog({
   const [servingUnits, setServingUnits] = useState<ServingUnitEntry[]>([
     { ...DEFAULT_SERVING_UNIT },
   ]);
+  const [foodToDelete, setFoodToDelete] = useState<number | null>(null);
 
   const assignMeal = useAssignMeal();
   const queryClient = useQueryClient();
@@ -117,6 +129,15 @@ export default function AddMealDialog({
       setShowCustomForm(false);
     },
     onError: () => toast.error("Failed to create food"),
+  });
+
+  const deleteFoodMutation = useMutation({
+    mutationFn: (foodId: number) => deletePersonalFood(foodId),
+    onSuccess: () => {
+      toast.success("Personal food deleted");
+      queryClient.invalidateQueries({ queryKey: ["foods-for-meal"] });
+    },
+    onError: () => toast.error("Failed to delete food"),
   });
 
   const handleAddFood = (food: FoodWithServingUnits) => {
@@ -474,18 +495,28 @@ export default function AddMealDialog({
                 );
                 const isPersonal = food.userId !== null;
                 return (
-                  <button
+                  <div
                     key={food.id}
-                    type="button"
-                    onClick={() => handleAddFood(food as FoodWithServingUnits)}
-                    disabled={isSelected}
-                    className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition-colors ${
-                      isSelected
-                        ? "cursor-not-allowed opacity-40"
-                        : "hover:bg-muted"
+                    className={`flex w-full items-center gap-2 rounded-xl px-4 py-3 transition-colors ${
+                      isSelected ? "opacity-40" : "hover:bg-muted"
                     }`}
                   >
-                    <div className="min-w-0 flex-1">
+                    {/*
+                      FIX: Removed the <Plus> icon that was inside this button.
+                      Clicking the row is the affordance — a redundant icon cluttered
+                      the layout and caused the trash icon to misalign.
+                    */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        !isSelected &&
+                        handleAddFood(food as FoodWithServingUnits)
+                      }
+                      disabled={isSelected}
+                      className={`min-w-0 flex-1 text-left ${
+                        isSelected ? "cursor-not-allowed" : "cursor-pointer"
+                      }`}
+                    >
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-medium">{food.name}</p>
                         {isPersonal && (
@@ -498,9 +529,31 @@ export default function AddMealDialog({
                         {food.calories ?? 0} kcal · {food.protein ?? 0}g P ·{" "}
                         {food.carbohydrate ?? 0}g C · {food.fat ?? 0}g F
                       </p>
-                    </div>
-                    <Plus className="text-muted-foreground ml-3 size-4 shrink-0" />
-                  </button>
+                    </button>
+
+                    {/*
+                      FIX: Trash icon now sits as a direct flex sibling of the button,
+                      not nested inside it. It stays right-aligned and vertically
+                      centred regardless of how many lines the food name wraps to.
+                      Non-personal foods render nothing here, so the layout stays
+                      consistent (no phantom gap).
+                    */}
+                    {isPersonal ? (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="text-destructive size-8 shrink-0"
+                        onClick={() => setFoodToDelete(food.id)}
+                      >
+                        <Trash2 className="size-3" />
+                      </Button>
+                    ) : (
+                      // Invisible spacer so non-personal rows have the same
+                      // right-edge padding as personal ones
+                      <div className="size-8 shrink-0" />
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -521,6 +574,37 @@ export default function AddMealDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog
+        open={!!foodToDelete}
+        onOpenChange={(o) => !o && setFoodToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Personal Food</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure? This will permanently delete this food and remove it
+              from any meals it was added to.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setFoodToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!foodToDelete) return;
+                deleteFoodMutation.mutate(foodToDelete, {
+                  onSuccess: () => setFoodToDelete(null),
+                });
+              }}
+            >
+              {deleteFoodMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

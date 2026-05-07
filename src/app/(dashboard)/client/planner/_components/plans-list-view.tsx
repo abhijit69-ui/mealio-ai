@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useDeletePlan } from "../_services/useMealPlanMutation";
 import CreatePlanDialog from "./create-plan-dialog";
 import { Prisma } from "$/generated/prisma/client";
+import Image from "next/image";
 
 type Plan = Prisma.MealPlanGetPayload<{
   include: { items: true };
@@ -80,8 +81,13 @@ export default function PlansListView({ plans, userId }: Props) {
               onClick={() => router.push(`/client/planner/${plan.id}`)}
             >
               <CardContent className="space-y-4 p-5">
-                <div className="bg-muted flex h-36 items-center justify-center overflow-hidden rounded-xl">
-                  <CalendarDays className="text-muted-foreground size-10" />
+                <div className="relative h-36 w-full overflow-hidden rounded-xl">
+                  <Image
+                    src="/images/plan-image.png"
+                    alt={plan.name}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
 
                 <div className="flex items-start justify-between">
@@ -102,7 +108,10 @@ export default function PlansListView({ plans, userId }: Props) {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="size-8 opacity-0 group-hover:opacity-100"
+                          className="size-8"
+                          // FIX: removed opacity-0 group-hover:opacity-100 —
+                          // hover-to-reveal is inaccessible on touch devices.
+                          // The button is now always visible.
                           onClick={(e) => e.stopPropagation()}
                         >
                           <MoreHorizontal className="size-4" />
@@ -135,7 +144,6 @@ export default function PlansListView({ plans, userId }: Props) {
         onClose={() => setCreateOpen(false)}
       />
 
-      {/* Delete confirmation dialog */}
       <AlertDialog
         open={!!planToDelete}
         onOpenChange={(o) => !o && setPlanToDelete(null)}
