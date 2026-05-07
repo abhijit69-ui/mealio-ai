@@ -53,11 +53,11 @@ export default function NutritionSummary({ nutrition }: Props) {
       ),
     },
     {
-      label: "Additional Nutrients",
+      label: "Other Nutrients",
       icon: <Leaf className="size-5 text-emerald-400" />,
       value: null,
       sub: (
-        <div className="mt-2 flex gap-4">
+        <div className="mt-2 flex gap-8">
           <div>
             <p className="text-muted-foreground text-xs">Fiber</p>
             <p className="font-semibold">{Math.round(nutrition.fiber)}g</p>
