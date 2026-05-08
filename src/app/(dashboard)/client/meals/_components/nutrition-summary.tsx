@@ -2,7 +2,7 @@
 
 import { DayNutrition } from "../_services/mealQueries";
 import { Card, CardContent } from "@/components/ui/card";
-import { Beef, Droplets, Flame, Leaf, Utensils, Wheat } from "lucide-react";
+import { Beef, Flame, Leaf, Utensils } from "lucide-react";
 
 type Props = { nutrition: DayNutrition };
 
