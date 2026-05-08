@@ -9,7 +9,7 @@ export default async function MealsPage() {
   if (!session) redirect("/sign-in");
 
   const today = new Date();
-  const { mealsByType, nutrition } = await getMealsByDate(
+  const { mealsByType, nutrition, planId } = await getMealsByDate(
     session.user.id,
     today,
   );
@@ -20,6 +20,7 @@ export default async function MealsPage() {
       initialMealsByType={mealsByType}
       initialNutrition={nutrition}
       initialDate={today}
+      initialPlanId={planId}
     />
   );
 }
