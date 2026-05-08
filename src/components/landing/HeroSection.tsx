@@ -147,10 +147,10 @@ export default function HeroSection() {
             </p>
 
             {/* CTA buttons */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-3">
               <Link
                 href={ctaHref}
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:opacity-90 hover:shadow-xl active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:scale-[1.02] hover:opacity-90 hover:shadow-xl active:scale-95 sm:px-6 sm:py-3"
                 style={{
                   background: "linear-gradient(135deg, #7DC52A, #5fa31e)",
                   boxShadow: "0 4px 20px #7DC52A40",
@@ -162,10 +162,10 @@ export default function HeroSection() {
 
               <a
                 href="#how-it-works"
-                className="text-foreground border-border hover:bg-accent inline-flex items-center gap-2 rounded-full border px-6 py-2 text-sm font-semibold transition-all duration-200"
+                className="text-foreground border-border hover:bg-accent inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition-all duration-200 sm:px-6 sm:py-2"
               >
                 <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full"
+                  className="flex h-5 w-5 items-center justify-center rounded-full sm:h-7 sm:w-7"
                   style={{
                     background: "#7DC52A15",
                     border: "1px solid #7DC52A40",
