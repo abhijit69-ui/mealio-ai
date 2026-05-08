@@ -66,7 +66,7 @@ const Page = async () => {
 
         {/* Radial glow */}
         <div
-          className="pointer-events-none absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2"
+          className="pointer-events-none absolute top-1/2 left-1/2 h-150 w-150 -translate-x-1/2 -translate-y-1/2"
           style={{
             background:
               "radial-gradient(ellipse at 50% 50%, #7DC52A18 0%, transparent 65%)",
