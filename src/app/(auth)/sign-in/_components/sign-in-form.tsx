@@ -26,44 +26,70 @@ export default function SignInForm() {
 
   return (
     <FormProvider {...form}>
-      <form
-        className="w-full max-w-96 space-y-5 rounded-md border px-10 py-12"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
-        <div className="text-center">
-          <h2 className="mb-1 text-2xl font-semibold">Welcome Back</h2>
+      <div className="w-full max-w-sm">
+        {/* Heading */}
+        <div className="mb-8">
+          <h2 className="text-foreground mb-1.5 text-3xl font-extrabold tracking-tight">
+            Welcome back
+          </h2>
           <p className="text-muted-foreground text-sm">
-            Sign in to your account
+            Sign in to continue to your meal planner
           </p>
         </div>
 
-        <div className="space-y-3">
-          <ControlledInput<SignInSchema> name="email" label="Email" />
-          <ControlledInput<SignInSchema>
-            name="password"
-            label="Password"
-            type="password"
-          />
-        </div>
+        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="space-y-4">
+            <ControlledInput<SignInSchema> name="email" label="Email" />
+            <ControlledInput<SignInSchema>
+              name="password"
+              label="Password"
+              type="password"
+            />
+          </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          isLoading={signInMutation.isPending}
-        >
-          Sign In
-        </Button>
+          {/* Forgot password */}
+          <div className="-mt-2 flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground hover:text-foreground text-xs transition-colors duration-200"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
-        <div className="text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/sign-up"
-            className="text-primary font-medium hover:underline"
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-xl text-sm font-semibold"
+            style={{
+              background: "linear-gradient(135deg, #7DC52A, #5fa31e)",
+              color: "#fff",
+              border: "none",
+            }}
+            isLoading={signInMutation.isPending}
           >
-            Sign up
-          </Link>
-        </div>
-      </form>
+            Sign In
+          </Button>
+
+          {/* Divider */}
+          <div className="relative flex items-center gap-3 py-1">
+            <div className="bg-border h-px flex-1" />
+            <span className="text-muted-foreground text-xs">or</span>
+            <div className="bg-border h-px flex-1" />
+          </div>
+
+          {/* Sign up link */}
+          <p className="text-muted-foreground text-center text-sm">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/sign-up"
+              className="font-semibold transition-colors duration-200 hover:underline"
+              style={{ color: "#7DC52A" }}
+            >
+              Sign up free
+            </Link>
+          </p>
+        </form>
+      </div>
     </FormProvider>
   );
 }

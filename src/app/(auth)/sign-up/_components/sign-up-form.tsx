@@ -1,4 +1,5 @@
 "use client";
+
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import {
   signUpDefaultValues,
@@ -10,7 +11,7 @@ import { ControlledInput } from "@/components/ui/controlled-input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useSignUp } from "../_services/useSignUpMutation";
-import { authClient } from "@/lib/authClient"; // we'll create this tomorrow
+import { authClient } from "@/lib/authClient";
 
 export default function SignUpForm() {
   const form = useForm<SignUpSchema>({
@@ -30,54 +31,25 @@ export default function SignUpForm() {
 
   return (
     <FormProvider {...form}>
-      <form
-        className="w-full max-w-96 space-y-5 rounded-md border px-10 py-12"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
-        <div className="text-center">
-          <h2 className="mb-1 text-2xl font-semibold">Create Account</h2>
+      <div className="w-full max-w-sm">
+        {/* Heading */}
+        <div className="mb-8">
+          <h2 className="text-foreground mb-1.5 text-3xl font-extrabold tracking-tight">
+            Create account
+          </h2>
           <p className="text-muted-foreground text-sm">
-            Sign up to get started
+            Sign up free — no credit card required
           </p>
         </div>
 
-        <div className="space-y-3">
-          <ControlledInput<SignUpSchema> name="name" label="Full Name" />
-          <ControlledInput<SignUpSchema> name="email" label="Email" />
-          <ControlledInput<SignUpSchema>
-            name="password"
-            label="Password"
-            type="password"
-          />
-          <ControlledInput<SignUpSchema>
-            name="confirmPassword"
-            label="Confirm Password"
-            type="password"
-          />
-        </div>
-
-        <Button
-          type="submit"
-          className="w-full"
-          isLoading={signUpMutation.isPending}
-        >
-          Sign Up
-        </Button>
-
-        <div className="relative flex items-center gap-3">
-          <div className="bg-border h-px flex-1" />
-          <span className="text-muted-foreground text-xs">OR</span>
-          <div className="bg-border h-px flex-1" />
-        </div>
-
+        {/* Google button — above the form, prominent */}
         <Button
           type="button"
           variant="outline"
-          className="w-full"
+          className="mb-5 h-11 w-full rounded-xl text-sm font-medium"
           onClick={handleGoogleSignUp}
         >
-          {/* inline SVG so no extra package needed */}
-          <svg viewBox="0 0 24 24" className="mr-2 size-4">
+          <svg viewBox="0 0 24 24" className="mr-2 size-4 shrink-0">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -98,16 +70,73 @@ export default function SignUpForm() {
           Continue with Google
         </Button>
 
-        <div className="text-center text-sm">
-          Already have an account?{" "}
-          <Link
-            href="/sign-in"
-            className="text-primary font-medium hover:underline"
-          >
-            Sign in
-          </Link>
+        {/* Divider */}
+        <div className="relative mb-5 flex items-center gap-3">
+          <div className="bg-border h-px flex-1" />
+          <span className="text-muted-foreground text-xs">
+            or sign up with email
+          </span>
+          <div className="bg-border h-px flex-1" />
         </div>
-      </form>
+
+        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="space-y-4">
+            <ControlledInput<SignUpSchema> name="name" label="Full Name" />
+            <ControlledInput<SignUpSchema> name="email" label="Email" />
+            <ControlledInput<SignUpSchema>
+              name="password"
+              label="Password"
+              type="password"
+            />
+            <ControlledInput<SignUpSchema>
+              name="confirmPassword"
+              label="Confirm Password"
+              type="password"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-xl text-sm font-semibold"
+            style={{
+              background: "linear-gradient(135deg, #7DC52A, #5fa31e)",
+              color: "#fff",
+              border: "none",
+            }}
+            isLoading={signUpMutation.isPending}
+          >
+            Create Account
+          </Button>
+
+          <p className="text-muted-foreground text-center text-sm">
+            Already have an account?{" "}
+            <Link
+              href="/sign-in"
+              className="font-semibold transition-colors duration-200 hover:underline"
+              style={{ color: "#7DC52A" }}
+            >
+              Sign in
+            </Link>
+          </p>
+
+          <p className="text-muted-foreground/60 text-center text-xs leading-relaxed">
+            By creating an account you agree to our{" "}
+            <Link
+              href="/terms"
+              className="hover:text-muted-foreground underline underline-offset-2 transition-colors"
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="hover:text-muted-foreground underline underline-offset-2 transition-colors"
+            >
+              Privacy Policy
+            </Link>
+          </p>
+        </form>
+      </div>
     </FormProvider>
   );
 }
