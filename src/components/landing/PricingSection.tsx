@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Check, Star } from "lucide-react";
+import Image from "next/image";
 
 const plans = [
   {
@@ -40,11 +41,11 @@ const plans = [
 
 // Placeholder avatar slots — replace src with real images later
 const avatars = [
-  { src: "/public/images/avatar-1.png", alt: "User 1" },
-  { src: "/public/images/avatar-2.png", alt: "User 2" },
-  { src: "/public/images/avatar-3.png", alt: "User 3" },
-  { src: "/public/images/avatar-4.png", alt: "User 4" },
-  { src: "/public/images/avatar-5.png", alt: "User 5" },
+  { src: "/images/avatar-1.jpg", alt: "User 1" },
+  { src: "/images/avatar-2.jpg", alt: "User 2" },
+  { src: "/images/avatar-3.jpg", alt: "User 3" },
+  { src: "/images/avatar-4.jpg", alt: "User 4" },
+  { src: "/images/avatar-5.jpg", alt: "User 5" },
 ];
 
 export default function PricingSection() {
@@ -83,9 +84,11 @@ export default function PricingSection() {
                       style={{ zIndex: avatars.length - i }}
                     >
                       {/* Avatar image — add src once you place images in /public/images */}
-                      <img
+                      <Image
                         src={avatar.src}
                         alt={avatar.alt}
+                        width={28}
+                        height={28}
                         className="h-full w-full object-cover"
                         onError={(e) => {
                           // Fallback to initials if image not found
@@ -196,7 +199,7 @@ export default function PricingSection() {
                         className="text-foreground flex items-start gap-2 text-sm"
                       >
                         <span
-                          className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full"
+                          className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
                           style={{ background: "#7DC52A20" }}
                         >
                           <Check
