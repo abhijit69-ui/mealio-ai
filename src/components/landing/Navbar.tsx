@@ -20,12 +20,11 @@ export default function Navbar() {
   const isAuthenticated = !!session?.user;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close mobile menu on route change / resize
   useEffect(() => {
     const onResize = () => {
       if (window.innerWidth >= 768) setMobileOpen(false);
@@ -42,7 +41,7 @@ export default function Navbar() {
         className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
           scrolled
             ? "bg-background/80 border-border border-b shadow-sm backdrop-blur-md"
-            : "bg-transparent"
+            : "bg-background/0 border-b border-transparent backdrop-blur-none"
         }`}
       >
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-6">
@@ -78,7 +77,6 @@ export default function Navbar() {
           {/* Desktop right side */}
           <div className="hidden items-center gap-3 md:flex">
             <ThemeToggle />
-
             {!isAuthenticated && (
               <Link
                 href="/sign-in"
@@ -87,7 +85,6 @@ export default function Navbar() {
                 Log in
               </Link>
             )}
-
             <Link
               href={ctaHref}
               className="rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 hover:scale-[1.02] hover:opacity-90 active:scale-95"
@@ -111,9 +108,14 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile menu overlay */}
+      {/* ── Mobile overlay ──
+           Key fix: backdrop and drawer are BOTH children of the same
+           opacity-transitioning parent. This means bg-black/30 and
+           backdrop-blur always fade in/out at the exact same rate —
+           no more grey flash before blur settles.
+      ── */}
       <div
-        className={`fixed inset-0 z-40 transition-all duration-300 md:hidden ${
+        className={`fixed inset-0 z-40 transition-all duration-300 ease-in-out md:hidden ${
           mobileOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -121,14 +123,16 @@ export default function Navbar() {
       >
         {/* Backdrop */}
         <div
-          className="bg-background/60 absolute inset-0 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"
           onClick={() => setMobileOpen(false)}
         />
 
-        {/* Drawer */}
+        {/* Drawer — slides down + fades in sync with backdrop */}
         <div
-          className={`bg-background border-border absolute top-16 right-0 left-0 border-b shadow-xl transition-all duration-300 ${
-            mobileOpen ? "translate-y-0" : "-translate-y-4"
+          className={`bg-background border-border absolute top-16 right-0 left-0 rounded-b-2xl border-b shadow-2xl transition-all duration-300 ease-in-out ${
+            mobileOpen
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-2 opacity-0"
           }`}
         >
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6">
@@ -137,7 +141,7 @@ export default function Navbar() {
                 key={label}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl px-4 py-3 text-sm font-medium transition-colors duration-200"
               >
                 {label}
               </a>
@@ -149,7 +153,7 @@ export default function Navbar() {
               <Link
                 href="/sign-in"
                 onClick={() => setMobileOpen(false)}
-                className="text-foreground border-border hover:bg-accent rounded-lg border px-4 py-3 text-center text-sm font-medium transition-colors duration-200"
+                className="text-foreground border-border hover:bg-accent rounded-xl border px-4 py-3 text-center text-sm font-medium transition-colors duration-200"
               >
                 Log in
               </Link>
@@ -158,7 +162,7 @@ export default function Navbar() {
             <Link
               href={ctaHref}
               onClick={() => setMobileOpen(false)}
-              className="rounded-lg px-4 py-3 text-center text-sm font-semibold transition-all duration-200 hover:opacity-90"
+              className="rounded-xl px-4 py-3 text-center text-sm font-semibold transition-all duration-200 hover:opacity-90"
               style={{ background: "#7DC52A", color: "#fff" }}
             >
               {isAuthenticated ? "Go to App" : "Get Started"}
