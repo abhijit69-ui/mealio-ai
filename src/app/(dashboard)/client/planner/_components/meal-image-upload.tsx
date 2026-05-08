@@ -78,7 +78,7 @@ export default function MealImageUpload({
           />
           {/* Overlay — hover on desktop, always visible on mobile/sheet */}
           <div
-            className={`absolute inset-0 flex items-end justify-center gap-2 bg-gradient-to-t from-black/60 to-transparent p-3 transition-opacity ${
+            className={`absolute inset-0 flex items-end justify-center gap-2 bg-linear-to-t from-black/60 to-transparent p-3 transition-opacity ${
               showButtonsAlways ? "opacity-100" : "opacity-0 hover:opacity-100"
             }`}
           >

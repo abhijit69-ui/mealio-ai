@@ -162,7 +162,7 @@ export default function HeroSection() {
 
               <a
                 href="#how-it-works"
-                className="text-foreground border-border hover:bg-accent inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-all duration-200"
+                className="text-foreground border-border hover:bg-accent inline-flex items-center gap-2 rounded-full border px-6 py-2 text-sm font-semibold transition-all duration-200"
               >
                 <span
                   className="flex h-7 w-7 items-center justify-center rounded-full"
@@ -185,7 +185,7 @@ export default function HeroSection() {
                   className="text-muted-foreground flex items-center gap-2 text-sm"
                 >
                   <span
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
                     style={{ background: "#7DC52A15" }}
                   >
                     <Icon size={13} style={{ color: "#7DC52A" }} />
@@ -197,10 +197,10 @@ export default function HeroSection() {
           </div>
 
           {/* ── RIGHT: Visual stack ── */}
-          <div className="relative flex h-[520px] items-center justify-center lg:h-[580px] lg:justify-end">
+          <div className="relative flex h-130 items-center justify-center lg:h-145 lg:justify-end">
             {/* Bowl — top right, partially clipped */}
             <div
-              className="pointer-events-none absolute -top-6 -right-6 z-20 h-[180px] w-[180px] select-none lg:-right-10 lg:h-[220px] lg:w-[220px]"
+              className="pointer-events-none absolute -top-6 -right-6 z-20 h-45 w-45 select-none lg:-right-10 lg:h-55 lg:w-55"
               style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.15))" }}
             >
               <Image
@@ -303,7 +303,7 @@ export default function HeroSection() {
                       <div className="flex items-center gap-3">
                         {/* Color dot / thumbnail placeholder */}
                         <div
-                          className="h-10 w-10 flex-shrink-0 rounded-xl"
+                          className="h-10 w-10 shrink-0 rounded-xl"
                           style={{
                             background: `${color}20`,
                             border: `1px solid ${color}30`,

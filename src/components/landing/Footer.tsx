@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-// import { Twitter, Linkedin, Github, Mail } from "lucide-react";
 import { FaXTwitter, FaLinkedinIn, FaGithub } from "react-icons/fa6";
 import { IoIosMail } from "react-icons/io";
 
@@ -25,42 +24,32 @@ const footerLinks = {
 };
 
 const socials = [
-  {
-    label: "Twitter",
-    href: "https://twitter.com",
-    icon: FaXTwitter,
-  },
-  {
-    label: "LinkedIn",
-    href: "https://linkedin.com",
-    icon: FaLinkedinIn,
-  },
-  {
-    label: "GitHub",
-    href: "https://github.com",
-    icon: FaGithub,
-  },
-  {
-    label: "Email",
-    href: "mailto:hello@mealio.ai",
-    icon: IoIosMail,
-  },
+  { label: "Twitter", href: "https://twitter.com", icon: FaXTwitter },
+  { label: "LinkedIn", href: "https://linkedin.com", icon: FaLinkedinIn },
+  { label: "GitHub", href: "https://github.com", icon: FaGithub },
+  { label: "Email", href: "mailto:hello@mealio.ai", icon: IoIosMail },
 ];
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-[#0e1208] text-white">
-      {/* Subtle green glow top edge */}
+    /*
+      Light mode: #0e1208 — dark forest green, distinct from the cream page above
+      Dark  mode: #060c05 — slightly deeper/cooler so it doesn't fight the
+                            dark navy page background; stays in the same green
+                            family but reads as footer rather than just more page
+    */
+    <footer className="relative overflow-hidden bg-[#0e1208] text-white dark:bg-[#060c05]">
+      {/* Subtle green glow top edge — unchanged */}
       <div
-        className="absolute top-0 left-1/2 h-[1px] w-[600px] -translate-x-1/2"
+        className="absolute top-0 left-1/2 h-px w-150 -translate-x-1/2"
         style={{
           background:
             "linear-gradient(90deg, transparent, #7DC52A55, transparent)",
         }}
       />
-      {/* Faint radial glow */}
+      {/* Faint radial glow — unchanged */}
       <div
-        className="pointer-events-none absolute top-0 left-1/2 h-[300px] w-[800px] -translate-x-1/2"
+        className="pointer-events-none absolute top-0 left-1/2 h-75 w-200 -translate-x-1/2"
         style={{
           background:
             "radial-gradient(ellipse at 50% 0%, #7DC52A0D 0%, transparent 70%)",
@@ -70,7 +59,7 @@ export default function Footer() {
       <div className="relative mx-auto max-w-6xl px-6 pt-16 pb-8">
         {/* Top row: brand + links */}
         <div className="grid grid-cols-1 gap-10 border-b border-white/10 pb-12 md:grid-cols-5">
-          {/* Brand col */}
+          {/* Brand col — full width on mobile, 2/5 on desktop */}
           <div className="flex flex-col gap-4 md:col-span-2">
             <Link href="/" className="flex w-fit items-center gap-2">
               <Image
@@ -106,29 +95,36 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Link cols */}
-          {Object.entries(footerLinks).map(([group, links]) => (
-            <div key={group} className="flex flex-col gap-3">
-              <p className="text-xs font-semibold tracking-widest text-white/30 uppercase">
-                {group}
-              </p>
-              <ul className="flex flex-col gap-2">
-                {links.map(({ label, href }) => (
-                  <li key={label}>
-                    <Link
-                      href={href}
-                      className="text-sm text-white/50 transition-colors duration-200 hover:text-white"
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/*
+            FIX: Link groups wrapped in their own grid.
+            Mobile:  grid-cols-2 → Product+Company side by side, Legal below
+            sm+:     grid-cols-3 → all three in one row
+            md:      col-span-3 fills the remaining columns of the parent 5-col grid
+          */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-3 md:grid-cols-3">
+            {Object.entries(footerLinks).map(([group, links]) => (
+              <div key={group} className="flex flex-col gap-3">
+                <p className="text-xs font-semibold tracking-widest text-white/30 uppercase">
+                  {group}
+                </p>
+                <ul className="flex flex-col gap-2">
+                  {links.map(({ label, href }) => (
+                    <li key={label}>
+                      <Link
+                        href={href}
+                        className="text-sm text-white/50 transition-colors duration-200 hover:text-white"
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Bottom row */}
+        {/* Bottom row — unchanged */}
         <div className="flex flex-col items-center justify-between gap-4 pt-8 sm:flex-row">
           <p className="text-xs text-white/30">
             © {new Date().getFullYear()} Mealio.ai — All rights reserved.

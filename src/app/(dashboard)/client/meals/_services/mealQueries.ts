@@ -2,7 +2,7 @@
 
 import db from "@/lib/db";
 import { startOfDay, endOfDay } from "date-fns";
-import { MealType, Prisma } from "$/generated/prisma/client";
+import { Prisma } from "$/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 import { executeAction } from "@/lib/executeAction";
 

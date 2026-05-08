@@ -57,7 +57,7 @@ export default function PricingSection() {
       <div className="relative mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-14 lg:flex-row lg:items-start">
           {/* Left — social proof */}
-          <div className="flex w-full flex-col gap-6 lg:max-w-sm lg:pt-10">
+          <div className="flex w-full flex-col gap-6 lg:max-w-sm lg:pt-5">
             <p
               className="text-xs font-semibold tracking-widest uppercase"
               style={{ color: "#7DC52A" }}

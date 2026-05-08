@@ -75,9 +75,9 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
   const [editingDescription, setEditingDescription] = useState("");
 
   const hasImage = !!slot.image;
-  const foodsWithDescriptions = slot.meal.mealFoods.filter((mf: MealFood) =>
-    mf.food.description?.trim(),
-  );
+  // const foodsWithDescriptions = slot.meal.mealFoods.filter((mf: MealFood) =>
+  //   mf.food.description?.trim(),
+  // );
 
   const totalNutrition =
     slot.meal.mealFoods.reduce(
@@ -258,11 +258,11 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
             {/* ── Col 2 (desktop): Image — only if exists ── */}
             {hasImage && (
               <div className="order-2 md:order-2">
-                <div className="bg-muted/60 h-full min-h-[300px] overflow-hidden rounded-2xl">
+                <div className="bg-muted/60 h-full min-h-75 overflow-hidden rounded-2xl">
                   <MealImageUpload
                     planItemId={slot.id}
                     currentImage={slot.image}
-                    className="h-full min-h-[300px]"
+                    className="h-full min-h-75"
                     showButtonsAlways={true}
                   />
                 </div>

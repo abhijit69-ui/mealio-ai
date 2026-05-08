@@ -31,7 +31,7 @@ export default function HowItWorks() {
     <section id="how-it-works" className="relative overflow-hidden px-6 py-24">
       {/* Faint radial green glow center */}
       <div
-        className="pointer-events-none absolute top-1/2 left-1/2 h-[400px] w-[700px] -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none absolute top-1/2 left-1/2 h-100 w-175 -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
             "radial-gradient(ellipse at 50% 50%, #7DC52A09 0%, transparent 70%)",
@@ -73,7 +73,7 @@ export default function HowItWorks() {
               className="relative flex flex-col items-center gap-5 text-center"
             >
               {/* Step circle */}
-              <div className="relative flex-shrink-0">
+              <div className="relative shrink-0">
                 {/* Outer ring */}
                 <div
                   className="flex h-20 w-20 items-center justify-center rounded-full"
