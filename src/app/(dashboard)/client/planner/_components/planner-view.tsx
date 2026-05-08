@@ -34,7 +34,14 @@ export default function PlannerView({ plan, userId }: Props) {
     return DATE_INDEX_TO_DAY[getDay(date)];
   });
 
-  const [selectedDay, setSelectedDay] = useState<Day>(planDays[0]);
+  const getInitialDay = (): Day => {
+    const today = new Date();
+    const todayDayEnum = DATE_INDEX_TO_DAY[getDay(today)];
+    // check if today's day enum exists in this plan's days
+    return planDays.includes(todayDayEnum) ? todayDayEnum : planDays[0];
+  };
+
+  const [selectedDay, setSelectedDay] = useState<Day>(getInitialDay);
 
   const [dialogState, setDialogState] = useState<{
     open: boolean;

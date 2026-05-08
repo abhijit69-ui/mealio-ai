@@ -20,7 +20,7 @@ export default function Navbar() {
   const isAuthenticated = !!session?.user;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 1);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -39,7 +39,7 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
           scrolled
             ? "bg-background/80 border-border border-b shadow-sm backdrop-blur-md"
             : "bg-transparent"

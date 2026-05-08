@@ -6,6 +6,7 @@ import {
   createPlan,
   deletePlan,
   removeMealFromSlot,
+  updateMealPlanItemImage,
 } from "./mealPlanMutation";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -68,5 +69,22 @@ export const useRemoveMeal = () => {
       router.refresh(); // ← re-runs server component with fresh data
     },
     onError: () => toast.error("Failed to remove meal"),
+  });
+};
+
+export const useUpdateMealImage = () => {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: ({
+      planItemId,
+      imageUrl,
+    }: {
+      planItemId: number;
+      imageUrl: string | null;
+    }) => updateMealPlanItemImage(planItemId, imageUrl),
+    onSuccess: () => {
+      router.refresh();
+    },
+    onError: () => toast.error("Failed to update image"),
   });
 };

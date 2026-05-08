@@ -228,3 +228,18 @@ export const deletePersonalFood = async (foodId: number) => {
     },
   });
 };
+
+export const updateMealPlanItemImage = async (
+  planItemId: number,
+  imageUrl: string | null,
+) => {
+  await executeAction({
+    actionFn: async () => {
+      const item = await db.mealPlanItem.update({
+        where: { id: planItemId },
+        data: { image: imageUrl },
+      });
+      revalidatePath(`/client/planner/${item.planId}`);
+    },
+  });
+};

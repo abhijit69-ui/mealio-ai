@@ -133,6 +133,8 @@ model MealPlan {
 model MealPlanItem {
   id Int @id @default(autoincrement())
 
+  image String?
+
   planId Int
   plan   MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 

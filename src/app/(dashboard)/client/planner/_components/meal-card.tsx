@@ -17,10 +17,10 @@ import {
   Droplets,
   Beef,
 } from "lucide-react";
-import Image from "next/image";
 import { useRemoveMeal } from "../_services/useMealPlanMutation";
 import { MealFood, MealSlot, MealType } from "../_types/plannerTypes";
 import MealDetailSheet from "./meal-detail-sheet";
+import MealImageUpload from "./meal-image-upload";
 
 const MEAL_ICONS: Record<MealType, string> = {
   BREAKFAST: "🌤️",
@@ -63,7 +63,7 @@ export default function MealCard({ type, slot, onAdd }: Props) {
   return (
     <>
       <Card className="flex flex-col overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between p-3 pb-0 sm:p-4 sm:pb-0">
+        <CardHeader className="flex flex-row items-center justify-between p-3 pb-0 sm:p-2 sm:pb-0">
           <div className="flex items-center gap-2">
             <span>{MEAL_ICONS[type]}</span>
             <span className="font-semibold">{MEAL_LABELS[type]}</span>
@@ -94,23 +94,10 @@ export default function MealCard({ type, slot, onAdd }: Props) {
           )}
         </CardHeader>
 
-        <CardContent className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
+        <CardContent className="flex flex-1 flex-col gap-3 px-3 sm:px-3">
           {slot ? (
             <>
-              {slot.meal?.mealFoods?.[0]?.food?.image ? (
-                <div className="relative h-36 w-full overflow-hidden rounded-lg sm:h-40">
-                  <Image
-                    src={slot.meal.mealFoods[0].food.image}
-                    alt={slot.meal.mealFoods[0].food.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="bg-muted flex h-36 items-center justify-center rounded-lg sm:h-40">
-                  <span className="text-4xl">🍽️</span>
-                </div>
-              )}
+              <MealImageUpload planItemId={slot.id} currentImage={slot.image} />
 
               <div>
                 <p className="font-medium">

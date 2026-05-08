@@ -32,6 +32,7 @@ export type MealSlot = {
   mealId: number;
   day: Day;
   type: MealType;
+  image: string | null;
   meal: {
     id: number;
     type: MealType;
