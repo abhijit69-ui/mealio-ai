@@ -37,7 +37,11 @@ export type DayNutrition = {
 export const getMealsByDate = async (
   userId: string,
   date: Date,
-): Promise<{ mealsByType: MealsByType; nutrition: DayNutrition }> => {
+): Promise<{
+  mealsByType: MealsByType;
+  nutrition: DayNutrition;
+  planId: number | null;
+}> => {
   const meals = await db.meal.findMany({
     where: {
       userId,
@@ -103,7 +107,16 @@ export const getMealsByDate = async (
     },
   );
 
-  return { mealsByType, nutrition };
+  const plan = await db.mealPlan.findFirst({
+    where: {
+      userId,
+      startDate: { lte: endOfDay(date) },
+      endDate: { gte: startOfDay(date) },
+    },
+    select: { id: true },
+  });
+
+  return { mealsByType, nutrition, planId: plan?.id ?? null };
 };
 
 export const deleteMealFromDay = async (mealId: number) => {

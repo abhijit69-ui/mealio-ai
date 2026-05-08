@@ -10,9 +10,16 @@ import { useUpdateMealImage } from "../_services/useMealPlanMutation";
 type Props = {
   planItemId: number;
   currentImage: string | null;
+  className?: string;
+  showButtonsAlways?: boolean; // ← for sheet/mobile context
 };
 
-export default function MealImageUpload({ planItemId, currentImage }: Props) {
+export default function MealImageUpload({
+  planItemId,
+  currentImage,
+  className = "h-36 sm:h-40",
+  showButtonsAlways = false,
+}: Props) {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -21,8 +28,6 @@ export default function MealImageUpload({ planItemId, currentImage }: Props) {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // validate file type and size
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
@@ -31,27 +36,19 @@ export default function MealImageUpload({ planItemId, currentImage }: Props) {
       toast.error("Image must be under 5MB");
       return;
     }
-
     setUploading(true);
-
     try {
-      // upload directly to Cloudinary using unsigned upload preset
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", "mealio");
       formData.append("folder", "meal-planner");
-
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
         { method: "POST", body: formData },
       );
-
       if (!response.ok) throw new Error("Upload failed");
-
       const data = await response.json();
       const imageUrl: string = data.secure_url;
-
-      // save URL to DB
       await updateImage.mutateAsync({ planItemId, imageUrl });
       setPreviewUrl(imageUrl);
       toast.success("Photo uploaded");
@@ -59,7 +56,6 @@ export default function MealImageUpload({ planItemId, currentImage }: Props) {
       toast.error("Failed to upload photo");
     } finally {
       setUploading(false);
-      // reset input so same file can be re-selected
       if (inputRef.current) inputRef.current.value = "";
     }
   };
@@ -71,7 +67,7 @@ export default function MealImageUpload({ planItemId, currentImage }: Props) {
   };
 
   return (
-    <div className="relative h-36 w-full overflow-hidden rounded-lg sm:h-40">
+    <div className={`relative w-full overflow-hidden rounded-lg ${className}`}>
       {previewUrl ? (
         <>
           <Image
@@ -80,8 +76,12 @@ export default function MealImageUpload({ planItemId, currentImage }: Props) {
             fill
             className="object-cover"
           />
-          {/* Overlay buttons on hover */}
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+          {/* Overlay — hover on desktop, always visible on mobile/sheet */}
+          <div
+            className={`absolute inset-0 flex items-end justify-center gap-2 bg-gradient-to-t from-black/60 to-transparent p-3 transition-opacity ${
+              showButtonsAlways ? "opacity-100" : "opacity-0 hover:opacity-100"
+            }`}
+          >
             <Button
               type="button"
               size="sm"
@@ -139,8 +139,6 @@ export default function MealImageUpload({ planItemId, currentImage }: Props) {
           )}
         </button>
       )}
-
-      {/* Hidden file input */}
       <input
         ref={inputRef}
         type="file"

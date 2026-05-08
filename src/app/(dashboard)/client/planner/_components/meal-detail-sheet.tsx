@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -7,8 +8,25 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { MealFood, MealSlot, MealType } from "../_types/plannerTypes";
-import { Beef, Droplets, Flame, ScrollText, Wheat } from "lucide-react";
+import {
+  Beef,
+  Check,
+  Droplets,
+  Flame,
+  Info,
+  Pencil,
+  ScrollText,
+  Wheat,
+  X,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { updateFoodDescription } from "../_services/mealPlanMutation";
+import MealImageUpload from "./meal-image-upload";
 
 const MEAL_ICONS: Record<MealType, string> = {
   BREAKFAST: "🌤️",
@@ -52,12 +70,18 @@ type Props = {
 };
 
 export default function MealDetailSheet({ open, slot, onClose }: Props) {
+  const router = useRouter();
+  const [editingFoodId, setEditingFoodId] = useState<number | null>(null);
+  const [editingDescription, setEditingDescription] = useState("");
+
+  const hasImage = !!slot.image;
+  const foodsWithDescriptions = slot.meal.mealFoods.filter((mf: MealFood) =>
+    mf.food.description?.trim(),
+  );
+
   const totalNutrition =
     slot.meal.mealFoods.reduce(
-      (
-        acc: { calories: number; protein: number; carbs: number; fat: number },
-        mf: MealFood,
-      ) => ({
+      (acc: typeof EMPTY_NUTRITION, mf: MealFood) => ({
         calories: acc.calories + (mf.food.calories ?? 0) * (mf.amount / 100),
         protein: acc.protein + (mf.food.protein ?? 0) * (mf.amount / 100),
         carbs: acc.carbs + (mf.food.carbohydrate ?? 0) * (mf.amount / 100),
@@ -66,19 +90,43 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
       { ...EMPTY_NUTRITION },
     ) ?? EMPTY_NUTRITION;
 
-  // Only foods that actually have a description
-  const foodsWithDescriptions = slot.meal.mealFoods.filter((mf: MealFood) =>
-    mf.food.description?.trim(),
-  );
+  const descriptionMutation = useMutation({
+    mutationFn: ({
+      foodId,
+      description,
+    }: {
+      foodId: number;
+      description: string;
+    }) => updateFoodDescription(foodId, description),
+    onSuccess: () => {
+      toast.success("Description updated");
+      setEditingFoodId(null);
+      router.refresh();
+    },
+    onError: () => toast.error("Failed to update description"),
+  });
+
+  const handleEditStart = (mf: MealFood) => {
+    setEditingFoodId(mf.food.id);
+    setEditingDescription(mf.food.description ?? "");
+  };
+
+  const handleEditSave = (foodId: number) => {
+    descriptionMutation.mutate({ foodId, description: editingDescription });
+  };
+
+  const handleEditCancel = () => {
+    setEditingFoodId(null);
+    setEditingDescription("");
+  };
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
         side="bottom"
-        className="max-h-[85vh] overflow-y-auto rounded-t-2xl px-0 pb-8"
+        className="max-h-[90vh] overflow-y-auto rounded-t-2xl px-0 pb-8"
       >
-        {/* Wider max-w so the bento grid has room to breathe on desktop */}
-        <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
           <SheetHeader className="mb-5">
             <SheetTitle className="flex items-center gap-2 text-lg">
               <span>{MEAL_ICONS[slot.type]}</span>
@@ -87,17 +135,19 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
           </SheetHeader>
 
           {/*
-            BENTO GRID
-            ══════════════════════════════════════════════════════
-            Mobile  (1 col)  DOM order → Nutrition · Description · Foods
-            Desktop (2 cols) Explicit placement:
-              col-1 row-1 → Nutrition
-              col-1 row-2 → Foods
-              col-2 row-1…2 (row-span-2) → Description
+            LAYOUT:
+            Mobile (1 col):  Nutrition → Image → Description → Foods
+            Desktop no image (2 col): [Nutrition + Foods] | [Description]
+            Desktop with image (3 col): [Nutrition + Foods] | [Image] | [Description]
           */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* ① Total Nutrition ─ col-1 row-1 on desktop */}
-            <div className="order-1 md:col-start-1 md:row-start-1">
+          <div
+            className={`grid grid-cols-1 gap-4 ${
+              hasImage ? "md:grid-cols-3" : "md:grid-cols-2"
+            }`}
+          >
+            {/* ── Col 1: Nutrition + Foods ── */}
+            <div className="order-1 flex flex-col gap-4">
+              {/* Total Nutrition */}
               <div className="bg-muted/60 rounded-2xl p-4 sm:p-5">
                 <p className="text-muted-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
                   Total Nutrition
@@ -129,61 +179,12 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
                   />
                 </div>
               </div>
-            </div>
 
-            {/*
-              ② Description ─ col-2 row-1…2 on desktop (spans both rows)
-                              order-2 on mobile (between Nutrition and Foods)
-            */}
-            <div className="order-2 md:col-start-2 md:row-span-2 md:row-start-1">
-              <div className="bg-muted/60 flex h-full flex-col rounded-2xl p-4 sm:p-5">
-                {/* Header */}
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="bg-primary/10 flex size-7 items-center justify-center rounded-full">
-                    <ScrollText className="text-primary size-3.5" />
-                  </div>
-                  <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                    Description
-                  </p>
-                </div>
-
-                {foodsWithDescriptions.length > 0 ? (
-                  <div className="flex flex-col gap-4">
-                    {foodsWithDescriptions.map((mf: MealFood, idx: number) => (
-                      <div key={mf.id}>
-                        <p className="mb-1.5 text-sm font-semibold">
-                          {mf.food.name}
-                        </p>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          {mf.food.description}
-                        </p>
-                        {idx < foodsWithDescriptions.length - 1 && (
-                          <Separator className="mt-4" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  /* Empty state */
-                  <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
-                    <div className="bg-muted flex size-10 items-center justify-center rounded-full">
-                      <ScrollText className="text-muted-foreground size-4" />
-                    </div>
-                    <p className="text-muted-foreground text-sm">
-                      No description available for this meal.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ③ Foods breakdown ─ col-1 row-2 on desktop */}
-            <div className="order-3 md:col-start-1 md:row-start-2">
+              {/* Foods breakdown */}
               <div className="space-y-3">
                 <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                   Foods ({slot.meal.mealFoods.length})
                 </p>
-
                 {slot.meal.mealFoods.map((mf: MealFood) => {
                   const foodCalories =
                     (mf.food.calories ?? 0) * (mf.amount / 100);
@@ -196,19 +197,29 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
                   return (
                     <div
                       key={mf.id}
-                      className="bg-card rounded-2xl border p-4 sm:p-5"
+                      className="bg-card space-y-3 rounded-2xl border p-4 sm:p-5"
                     >
-                      {/* Food name + amount badge */}
-                      <div className="mb-3 flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium">{mf.food.name}</p>
-                        </div>
+                      {/* Food name + serving badge */}
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 flex-1 truncate font-medium">
+                          {mf.food.name}
+                        </p>
                         <div className="bg-muted shrink-0 rounded-lg px-2.5 py-1 text-right">
                           <p className="text-xs font-semibold">{mf.amount}g</p>
                           <p className="text-muted-foreground text-xs">
                             {mf.servingUnit?.name ?? "serving"}
                           </p>
                         </div>
+                      </div>
+
+                      {/* Per 100g note */}
+                      <div className="flex items-start gap-1.5">
+                        <Info className="text-muted-foreground mt-0.5 size-3 shrink-0" />
+                        <p className="text-muted-foreground text-xs">
+                          Nutrition values calculated based on per 100g. Your
+                          serving: {mf.amount}g (
+                          {mf.servingUnit?.name ?? "serving"}).
+                        </p>
                       </div>
 
                       {/* Per-food nutrition mini-grid */}
@@ -241,6 +252,126 @@ export default function MealDetailSheet({ open, slot, onClose }: Props) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* ── Col 2 (desktop): Image — only if exists ── */}
+            {hasImage && (
+              <div className="order-2 md:order-2">
+                <div className="bg-muted/60 h-full min-h-[300px] overflow-hidden rounded-2xl">
+                  <MealImageUpload
+                    planItemId={slot.id}
+                    currentImage={slot.image}
+                    className="h-full min-h-[300px]"
+                    showButtonsAlways={true}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ── Col 3 (or 2 if no image): Description ── */}
+            <div
+              className={`order-3 ${hasImage ? "md:order-3" : "md:order-2"}`}
+            >
+              <div className="bg-muted/60 flex h-full flex-col rounded-2xl p-4 sm:p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="bg-primary/10 flex size-7 items-center justify-center rounded-full">
+                    <ScrollText className="text-primary size-3.5" />
+                  </div>
+                  <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                    Description
+                  </p>
+                </div>
+
+                {slot.meal.mealFoods.length > 0 ? (
+                  <div className="flex flex-col gap-4">
+                    {slot.meal.mealFoods.map((mf: MealFood, idx: number) => (
+                      <div key={mf.id}>
+                        {/* Food name + edit button */}
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold">
+                            {mf.food.name}
+                          </p>
+                          {editingFoodId !== mf.food.id && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="size-7 shrink-0"
+                              onClick={() => handleEditStart(mf)}
+                            >
+                              <Pencil className="size-3" />
+                            </Button>
+                          )}
+                        </div>
+
+                        {/* Inline edit mode */}
+                        {editingFoodId === mf.food.id ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editingDescription}
+                              onChange={(e) =>
+                                setEditingDescription(e.target.value)
+                              }
+                              placeholder="Add a description for this food..."
+                              className="min-h-25 text-sm"
+                              autoFocus
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="gap-1.5"
+                                disabled={descriptionMutation.isPending}
+                                onClick={() => handleEditSave(mf.food.id)}
+                              >
+                                <Check className="size-3" />
+                                {descriptionMutation.isPending
+                                  ? "Saving..."
+                                  : "Save"}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="gap-1.5"
+                                onClick={handleEditCancel}
+                              >
+                                <X className="size-3" />
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : mf.food.description ? (
+                          <p className="text-muted-foreground text-sm leading-relaxed">
+                            {mf.food.description}
+                          </p>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleEditStart(mf)}
+                            className="text-muted-foreground hover:text-primary text-sm underline-offset-4 transition-colors hover:underline"
+                          >
+                            + Add description
+                          </button>
+                        )}
+
+                        {idx < slot.meal.mealFoods.length - 1 && (
+                          <Separator className="mt-4" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
+                    <div className="bg-muted flex size-10 items-center justify-center rounded-full">
+                      <ScrollText className="text-muted-foreground size-4" />
+                    </div>
+                    <p className="text-muted-foreground text-sm">
+                      No foods in this meal.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

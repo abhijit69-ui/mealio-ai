@@ -14,7 +14,7 @@ import {
   Utensils,
 } from "lucide-react";
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -147,6 +147,13 @@ export default function DashboardLayout({
   session,
 }: DashboardLayoutProps) {
   const [open, setOpen] = useState(false);
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   const signOutMutation = useSignOut();
   const userRole = session.user.role;
 

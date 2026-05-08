@@ -243,3 +243,17 @@ export const updateMealPlanItemImage = async (
     },
   });
 };
+
+export const updateFoodDescription = async (
+  foodId: number,
+  description: string,
+) => {
+  await executeAction({
+    actionFn: async () => {
+      await db.food.update({
+        where: { id: foodId },
+        data: { description: description.trim() || null },
+      });
+    },
+  });
+};
