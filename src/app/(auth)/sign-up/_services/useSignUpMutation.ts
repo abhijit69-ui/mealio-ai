@@ -19,8 +19,8 @@ export const useSignUp = () => {
       if (result.error) throw new Error(result.error.message);
     },
     onSuccess: () => {
-      toast.success("Signed up successfully");
-      router.replace("/sign-in");
+      toast.success("Account created! Please verify your email.");
+      router.replace("/check-email"); // ← now exists
     },
     onError: (error) => {
       toast.error(error.message || "Sign up failed");
