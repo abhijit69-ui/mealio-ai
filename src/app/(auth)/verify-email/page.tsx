@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-// import { authClient } from "@/lib/authClient";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
+
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const token = searchParams.get("token");
 
   useEffect(() => {
@@ -21,7 +22,9 @@ export default function VerifyEmailPage() {
       return;
     }
 
-    fetch(`/api/auth/verify-email?token=${token}`, { credentials: "include" })
+    fetch(`/api/auth/verify-email?token=${token}`, {
+      credentials: "include",
+    })
       .then(() => setStatus("success"))
       .catch(() => setStatus("error"));
   }, [token, router]);
@@ -49,10 +52,13 @@ export default function VerifyEmailPage() {
             <div className="mb-4 flex justify-center">
               <CheckCircle className="size-12" style={{ color: "#7DC52A" }} />
             </div>
+
             <h2 className="mb-2 text-xl font-bold">Email verified!</h2>
+
             <p className="text-muted-foreground mb-6 text-sm">
               Your email has been verified. Redirecting you to your dashboard...
             </p>
+
             <Button
               className="w-full rounded-xl"
               style={{
@@ -71,11 +77,14 @@ export default function VerifyEmailPage() {
             <div className="mb-4 flex justify-center">
               <XCircle className="text-destructive size-12" />
             </div>
+
             <h2 className="mb-2 text-xl font-bold">Verification failed</h2>
+
             <p className="text-muted-foreground mb-6 text-sm">
               This link may have expired or already been used. Please sign in to
               request a new link.
             </p>
+
             <Button
               className="w-full rounded-xl"
               style={{
@@ -90,5 +99,19 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <Loader2 className="size-10 animate-spin" />
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
