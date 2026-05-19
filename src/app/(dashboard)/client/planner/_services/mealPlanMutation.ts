@@ -513,30 +513,32 @@ Generate 21 meals with EXACT nutrition values from the database above:`;
     }
 
     // Create the meal
-    const DAY_TO_INDEX: Record<string, number> = {
-      MONDAY: 0,
-      TUESDAY: 1,
-      WEDNESDAY: 2,
-      THURSDAY: 3,
-      FRIDAY: 4,
-      SATURDAY: 5,
-      SUNDAY: 6,
+
+    // Maps Day enum → getUTCDay() value (0=Sun, 1=Mon, 2=Tue, ...)
+    const DAY_TO_WEEKDAY: Record<string, number> = {
+      SUNDAY: 0,
+      MONDAY: 1,
+      TUESDAY: 2,
+      WEDNESDAY: 3,
+      THURSDAY: 4,
+      FRIDAY: 5,
+      SATURDAY: 6,
     };
 
-    const baseDateStr = startDate; // "2026-05-19"
-    const [year, month, day] = baseDateStr.split("-").map(Number);
+    const [year, month, day] = startDate.split("-").map(Number);
+
+    // Calculate relative offset from plan start day — immune to which weekday the plan starts on
+    const planStartWeekday = new Date(
+      Date.UTC(year, month - 1, day),
+    ).getUTCDay();
+    const mealWeekday = DAY_TO_WEEKDAY[mealData.day] ?? 0;
+    const offset = (mealWeekday - planStartWeekday + 7) % 7;
 
     const meal = await db.meal.create({
       data: {
         userId: userId,
-        dateTime: new Date(
-          year,
-          month - 1,
-          day + (DAY_TO_INDEX[mealData.day] ?? 0),
-          12, // noon local time — avoids UTC midnight timezone shift
-          0,
-          0,
-        ),
+        // Date.UTC() avoids server local-timezone shifting the stored date
+        dateTime: new Date(Date.UTC(year, month - 1, day + offset, 12, 0, 0)),
         type: mealData.type,
       },
     });
