@@ -54,6 +54,8 @@ model Food {
   updatedAt        DateTime          @updatedAt
   category         Category?         @relation(fields: [categoryId], references: [id])
   categoryId       Int?
+  mealPlanId Int?
+  mealPlan   MealPlan? @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
   // ↓ new fields
   userId           String? // null = global (admin), set = personal (user)
   user             User?             @relation(fields: [userId], references: [id])
@@ -124,6 +126,7 @@ model MealPlan {
   endDate   DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  foods Food[]
 
   items MealPlanItem[]
 

@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Day, MealType } from "../_types/plannerTypes";
+import { GeneratePlanWithAIInputSchema } from "../_types/aiMealPlanSchema";
 
 export const useCreatePlan = (userId: string) => {
   const router = useRouter();
@@ -86,5 +87,55 @@ export const useUpdateMealImage = () => {
       router.refresh();
     },
     onError: () => toast.error("Failed to update image"),
+  });
+};
+
+// AI generation mutation
+
+export const useGeneratePlanWithAI = (userId: string) => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: async (data: {
+      name?: string;
+      startDate: string;
+      goal:
+        | "weight_loss"
+        | "muscle_gain"
+        | "maintenance"
+        | "high_protein"
+        | "energy_boost"
+        | "healthy_eating";
+      availableIngredients?: string;
+      foodsToAvoid?: string;
+      dietaryRestrictions?: (
+        | "vegetarian"
+        | "vegan"
+        | "non_vegetarian"
+        | "lactose_free"
+        | "gluten_free"
+      )[];
+      budget?: "budget" | "moderate" | "premium";
+    }) => {
+      // Validate with Zod
+      const validated = GeneratePlanWithAIInputSchema.parse({
+        ...data,
+        userId,
+      });
+
+      // Import dynamically to avoid circular dependencies
+      const { generateMealPlanWithAI } = await import("./mealPlanMutation");
+      return generateMealPlanWithAI(validated);
+    },
+    onSuccess: (plan) => {
+      toast.success("AI generated your meal plan!");
+      router.push(`/client/planner/${plan.id}`);
+    },
+    onError: (error) => {
+      console.error("AI Generation Error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to generate meal plan",
+      );
+    },
   });
 };

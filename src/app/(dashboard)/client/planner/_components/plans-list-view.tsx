@@ -20,10 +20,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CalendarDays, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+  Wand2,
+} from "lucide-react";
+
 import { useRouter } from "next/navigation";
 import { useDeletePlan } from "../_services/useMealPlanMutation";
+
 import CreatePlanDialog from "./create-plan-dialog";
+import GeneratePlanWithAIDialog from "./generate-plan-with-ai-dialog";
+
 import { Prisma } from "$/generated/prisma/client";
 import Image from "next/image";
 
@@ -31,16 +41,22 @@ type Plan = Prisma.MealPlanGetPayload<{
   include: { items: true };
 }>;
 
-type Props = { plans: Plan[]; userId: string };
+type Props = {
+  plans: Plan[];
+  userId: string;
+};
 
 export default function PlansListView({ plans, userId }: Props) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
+
   const router = useRouter();
   const deletePlan = useDeletePlan();
 
   const handleConfirmDelete = () => {
     if (!planToDelete) return;
+
     deletePlan.mutate(planToDelete.id, {
       onSuccess: () => setPlanToDelete(null),
     });
@@ -48,31 +64,60 @@ export default function PlansListView({ plans, userId }: Props) {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">My Meal Plans</h1>
+
           <p className="text-muted-foreground text-sm">
             {plans.length} plan{plans.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="mr-2 size-4" />
-          Create Plan
-        </Button>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setGenerateOpen(true)}
+            className="gap-2"
+          >
+            <Wand2 className="size-4" />
+            Generate with AI
+          </Button>
+
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-2 size-4" />
+            Create Plan
+          </Button>
+        </div>
       </div>
 
+      {/* Empty State */}
       {plans.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 py-24">
           <div className="bg-muted flex size-16 items-center justify-center rounded-full">
             <CalendarDays className="text-muted-foreground size-8" />
           </div>
+
           <p className="text-muted-foreground text-sm">No plans yet</p>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 size-4" />
-            Create your first plan
-          </Button>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setGenerateOpen(true)}
+              className="gap-2"
+            >
+              <Wand2 className="size-4" />
+              Generate with AI
+            </Button>
+
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="mr-2 size-4" />
+              Create your first plan
+            </Button>
+          </div>
         </div>
       ) : (
+        /* Plans Grid */
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => (
             <Card
@@ -93,10 +138,12 @@ export default function PlansListView({ plans, userId }: Props) {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold">{plan.name}</h3>
+
                     <p className="text-muted-foreground mt-0.5 text-sm">
                       {format(new Date(plan.startDate), "MMM d")} –{" "}
                       {format(new Date(plan.endDate), "MMM d, yyyy")}
                     </p>
+
                     <p className="text-muted-foreground mt-1 text-xs">
                       {plan.items.length} / 21 slots filled
                     </p>
@@ -109,15 +156,13 @@ export default function PlansListView({ plans, userId }: Props) {
                           variant="ghost"
                           size="icon"
                           className="size-8"
-                          // FIX: removed opacity-0 group-hover:opacity-100 —
-                          // hover-to-reveal is inaccessible on touch devices.
-                          // The button is now always visible.
                           onClick={(e) => e.stopPropagation()}
                         >
                           <MoreHorizontal className="size-4" />
                         </Button>
                       }
                     />
+
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         variant="destructive"
@@ -138,12 +183,20 @@ export default function PlansListView({ plans, userId }: Props) {
         </div>
       )}
 
+      {/* Dialogs */}
       <CreatePlanDialog
         open={createOpen}
         userId={userId}
         onClose={() => setCreateOpen(false)}
       />
 
+      <GeneratePlanWithAIDialog
+        open={generateOpen}
+        userId={userId}
+        onClose={() => setGenerateOpen(false)}
+      />
+
+      {/* Delete Confirmation */}
       <AlertDialog
         open={!!planToDelete}
         onOpenChange={(o) => !o && setPlanToDelete(null)}
@@ -151,6 +204,7 @@ export default function PlansListView({ plans, userId }: Props) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Plan</AlertDialogTitle>
+
             <AlertDialogDescription>
               Are you sure you want to delete{" "}
               <span className="text-foreground font-medium">
@@ -160,10 +214,12 @@ export default function PlansListView({ plans, userId }: Props) {
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setPlanToDelete(null)}>
               Cancel
             </AlertDialogCancel>
+
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

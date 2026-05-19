@@ -49,13 +49,12 @@ export const getMealsByDate = async (
         gte: startOfDay(date),
         lte: endOfDay(date),
       },
+      mealFoods: { some: {} }, // ← skip empty meals from old test runs
+      planItems: { some: {} }, // ← only meals linked to a plan
     },
     include: {
       mealFoods: {
-        include: {
-          food: true,
-          servingUnit: true,
-        },
+        include: { food: true, servingUnit: true },
       },
     },
     orderBy: { dateTime: "asc" },
