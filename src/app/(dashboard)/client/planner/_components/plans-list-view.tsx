@@ -22,8 +22,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CalendarDays,
+  CalendarPlus,
   MoreHorizontal,
-  Plus,
   Trash2,
   Wand2,
 } from "lucide-react";
@@ -62,10 +62,12 @@ export default function PlansListView({ plans, userId }: Props) {
     });
   };
 
+  const hasPlans = plans.length > 0;
+
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">My Meal Plans</h1>
 
@@ -74,25 +76,30 @@ export default function PlansListView({ plans, userId }: Props) {
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setGenerateOpen(true)}
-            className="gap-2"
-          >
-            <Wand2 className="size-4" />
-            Generate with AI
-          </Button>
+        {hasPlans && (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              onClick={() => setGenerateOpen(true)}
+              className="w-full gap-2 sm:w-auto"
+            >
+              <Wand2 className="size-4" />
+              Generate with AI
+            </Button>
 
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 size-4" />
-            Create Plan
-          </Button>
-        </div>
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className="w-full sm:w-auto"
+            >
+              <CalendarPlus className="mr-2 size-4" />
+              Create Plan
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Empty State */}
-      {plans.length === 0 ? (
+      {!hasPlans ? (
         <div className="flex flex-col items-center justify-center gap-4 py-24">
           <div className="bg-muted flex size-16 items-center justify-center rounded-full">
             <CalendarDays className="text-muted-foreground size-8" />
@@ -100,18 +107,21 @@ export default function PlansListView({ plans, userId }: Props) {
 
           <p className="text-muted-foreground text-sm">No plans yet</p>
 
-          <div className="flex gap-2">
+          <div className="flex w-full max-w-xs flex-col gap-2 sm:max-w-none sm:flex-row">
             <Button
               variant="outline"
               onClick={() => setGenerateOpen(true)}
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
             >
               <Wand2 className="size-4" />
               Generate with AI
             </Button>
 
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-2 size-4" />
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className="w-full sm:w-auto"
+            >
+              <CalendarPlus className="mr-2 size-4" />
               Create your first plan
             </Button>
           </div>
