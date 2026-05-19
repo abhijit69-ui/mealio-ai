@@ -107,7 +107,7 @@ export default function PlansListView({ plans, userId }: Props) {
 
           <p className="text-muted-foreground text-sm">No plans yet</p>
 
-          <div className="flex w-full max-w-xs flex-col gap-2 sm:max-w-none sm:flex-row">
+          <div className="flex w-full max-w-xs flex-col gap-2 sm:max-w-none sm:flex-row sm:justify-center">
             <Button
               variant="outline"
               onClick={() => setGenerateOpen(true)}
